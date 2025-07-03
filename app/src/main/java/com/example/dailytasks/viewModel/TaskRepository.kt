@@ -1,15 +1,15 @@
 package com.example.dailytasks.viewModel
 
-import android.os.Build
-import android.util.Log
 import com.example.dailytasks.model.DayTicketModel
+import com.example.dailytasks.model.TaskSequenceLimitModel
 import java.time.Clock
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
 
 class TaskRepository {
     fun getTicketsByDate(date : LocalDate) : List<DayTicketModel> {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            listOf(
+        return listOf(
                 DayTicketModel(
                     name = "Task 1",
                     date = LocalDate.now(Clock.systemDefaultZone()).atTime(2, 30),
@@ -33,10 +33,20 @@ class TaskRepository {
                     date = LocalDate.now(Clock.systemDefaultZone()).atTime(14, 0),
                     originTaskId = "4",
                     id = "4"
-                ))
-        } else {
-            Log.e("TaskRepository", "API level is too low")
-            listOf()
-        }
+                )).filter { it.date.toLocalDate() == date }
+    }
+
+    fun getTaskSequenceLimitModel() : TaskSequenceLimitModel{
+        return TaskSequenceLimitModel(
+            name = "Task 1",
+            schedule = mapOf(
+                DayOfWeek.THURSDAY to listOf(LocalTime.of(12, 30),
+                    LocalTime.of(16, 0)),
+                DayOfWeek.TUESDAY to listOf(LocalTime.of(12, 30)),
+                DayOfWeek.FRIDAY to listOf(LocalTime.of(12, 30))
+            ),
+            limitDate = LocalDate.now(Clock.systemDefaultZone()).plusDays(14),
+            id = "1"
+        )
     }
 }

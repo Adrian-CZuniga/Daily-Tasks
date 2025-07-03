@@ -1,7 +1,7 @@
 package com.example.dailytasks
 
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,9 +15,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dailytasks.model.DayTicketModel
+import com.example.dailytasks.model.generateDayTicketsModel
 import com.example.dailytasks.ui.theme.DailyTasksTheme
 import com.example.dailytasks.viewModel.TaskViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,14 +41,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, viewModel : TaskViewModel = hiltViewModel()){
-    val date = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        LocalDate.now(Clock.systemDefaultZone())
-    } else {
-        TODO("VERSION.SDK_INT < O")
-    }
+    val date = LocalDate.now(Clock.systemDefaultZone())
 
+    val taskSequenceLimitModel = viewModel.getTaskSequenceLimitModel()
+
+    val dayTicketsModel = taskSequenceLimitModel.generateDayTicketsModel(date) ?: emptyList()
+    Log.d("MainActivity", "MainScreen: $dayTicketsModel")
     Column ( modifier = modifier.fillMaxSize() ){
-        TicketListComposable(taskList = viewModel.getTicketsByDate(date))
+        TicketListComposable(taskList = dayTicketsModel)
     }
 }
 
