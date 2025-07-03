@@ -1,12 +1,12 @@
 package com.example.dailytasks
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dailytasks.model.DayTicketModel
-import com.example.dailytasks.model.generateDayTicketsModel
+import com.example.dailytasks.model.generateDayTicketModel
 import com.example.dailytasks.ui.theme.DailyTasksTheme
 import com.example.dailytasks.viewModel.TaskViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,23 +41,27 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, viewModel : TaskViewModel = hiltViewModel()){
-    val date = LocalDate.now(Clock.systemDefaultZone())
+    val date = LocalDate.now(Clock.systemDefaultZone()).plusDays(5)
 
     val taskSequenceLimitModel = viewModel.getTaskSequenceLimitModel()
+    val dayTickets = taskSequenceLimitModel.generateDayTicketModel(date = date)
 
-    val dayTicketsModel = taskSequenceLimitModel.generateDayTicketsModel(date) ?: emptyList()
-    Log.d("MainActivity", "MainScreen: $dayTicketsModel")
-    Column ( modifier = modifier.fillMaxSize() ){
-        TicketListComposable(taskList = dayTicketsModel)
+    Column (modifier = modifier
+        .fillMaxSize()
+    ){
+        Text(text = "Today is ${date.dayOfWeek}")
+        TicketListComposable(
+            dateFilter = date,
+            taskList = dayTickets
+        )
     }
 }
 
 @Composable
-fun TicketListComposable(taskList : List<DayTicketModel>, modifier: Modifier = Modifier){
+fun TicketListComposable(dateFilter : LocalDate? = null, taskList : List<DayTicketModel>, modifier: Modifier = Modifier){
     LazyColumn (modifier = modifier) {
-        items(taskList.size){
-            TicketListItem(dayTicketModel = taskList[it],
-                modifier = Modifier.fillMaxWidth())
+        items(taskList.filter { dateFilter == null || it.date.toLocalDate() == dateFilter }.size){
+            TicketListItem(dayTicketModel = taskList[it], modifier = Modifier.fillMaxWidth())
         }
     }
 }
@@ -66,6 +70,7 @@ fun TicketListComposable(taskList : List<DayTicketModel>, modifier: Modifier = M
 fun TicketListItem(dayTicketModel: DayTicketModel, modifier: Modifier = Modifier){
     Row (modifier = modifier) {
         Text(text = dayTicketModel.name)
+        Spacer(modifier = Modifier.weight(1f))
         Text(text = dayTicketModel.date.toString())
     }
 }

@@ -17,24 +17,36 @@ data class TaskSequenceLimitModel(
     override val id : String,
 ) : TaskModel()
 
-fun TaskSequenceLimitModel.generateDayTicketsModel(toDate : LocalDate) : List<DayTicketModel>? {
-    if (toDate > limitDate)  return null
-    val dayOfWeek = toDate.dayOfWeek
-    val schedule = this.schedule[dayOfWeek]
+
+fun TaskSequenceLimitModel.generateTicketsModel(fromDate : LocalDate, toDate : LocalDate = fromDate.plusDays(7)) : List<DayTicketModel> {
+    if (fromDate > limitDate) return listOf()
+    if (toDate > limitDate && limitDate != null) return generateTicketsModel(fromDate, limitDate)
 
     val dayTickets = mutableListOf<DayTicketModel>()
-    if (schedule != null) {
-        dayTickets.addAll(schedule.map {
-            DayTicketModel(
-                name = this.name,
-                date = LocalDateTime.of(toDate, it),
-                originTaskId = this.id,
-                id = this.id
+
+    val rangeDays = fromDate.datesUntil(toDate)
+    rangeDays.forEach {
+        val times = schedule[it.dayOfWeek] ?: listOf()
+        times.forEach { time ->
+            dayTickets.add(
+                DayTicketModel(
+                    name = this.name,
+                    date = LocalDateTime.of(it, time),
+                    originTaskId = this.id,
+                    id = "${this.id}_${it}_${time}"
+                )
             )
-        })
+        }
     }
+
     return dayTickets
 }
+
+fun TaskSequenceLimitModel.generateDayTicketModel(date : LocalDate) : List<DayTicketModel> {
+    return generateTicketsModel(fromDate = date, toDate = date.plusDays(1))
+        .filter { date == it.date.toLocalDate() }
+}
+
 
 data class TaskSingleModel(
     override val name : String,

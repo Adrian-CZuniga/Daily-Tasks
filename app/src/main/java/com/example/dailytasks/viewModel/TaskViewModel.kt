@@ -11,6 +11,7 @@ import javax.inject.Inject
 class TaskViewModel @Inject constructor() : ViewModel() {
     val taskRepository = TaskRepository()
 
+
     fun getTicketsByDate(date : LocalDate) : List<DayTicketModel> {
         return taskRepository.getTicketsByDate(date)
     }
