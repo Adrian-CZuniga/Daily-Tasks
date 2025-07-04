@@ -1,6 +1,7 @@
 package com.example.dailytasks
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,17 +12,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dailytasks.model.DayTicketModel
-import com.example.dailytasks.model.generateDayTicketModel
+import com.example.dailytasks.model.generateTicketsModel
 import com.example.dailytasks.ui.theme.DailyTasksTheme
 import com.example.dailytasks.viewModel.TaskViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.Clock
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 @AndroidEntryPoint
@@ -31,7 +44,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DailyTasksTheme {
-                Scaffold(){
+                Scaffold(
+                    floatingActionButton = {
+                        FloatingActionButton(onClick = {
+                            Log.d("MainActivity", "FloatingActionButton")
+                        },
+                            containerColor = Color.DarkGray) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color.White)
+                        }
+                    }
+                ) {
                     MainScreen(modifier = Modifier.padding(it))
                 }
             }
@@ -41,24 +63,36 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, viewModel : TaskViewModel = hiltViewModel()){
-    val date = LocalDate.now(Clock.systemDefaultZone()).plusDays(5)
-
+    val today = LocalDate.now(Clock.systemDefaultZone())
     val taskSequenceLimitModel = viewModel.getTaskSequenceLimitModel()
-    val dayTickets = taskSequenceLimitModel.generateDayTicketModel(date = date)
+    var tabIndex by remember { mutableIntStateOf(today.dayOfWeek.value - 1) }
+
+    val paginationTickets = taskSequenceLimitModel.generateTicketsModel(fromDate = today, toDate = today.plusDays(21))
+
+
+    val date = today.plusDays(tabIndex.toLong())
 
     Column (modifier = modifier
         .fillMaxSize()
     ){
+        TabRow(selectedTabIndex = tabIndex) {
+            DayOfWeek.entries.forEachIndexed { index, title ->
+                Tab(text = { Text(title.name) },
+                    selected = tabIndex == title.value,
+                    onClick = { tabIndex = index }
+                )
+            }
+        }
         Text(text = "Today is ${date.dayOfWeek}")
         TicketListComposable(
             dateFilter = date,
-            taskList = dayTickets
+            taskList = paginationTickets
         )
     }
 }
 
 @Composable
-fun TicketListComposable(dateFilter : LocalDate? = null, taskList : List<DayTicketModel>, modifier: Modifier = Modifier){
+fun TicketListComposable(modifier: Modifier = Modifier, dateFilter : LocalDate? = null, taskList : List<DayTicketModel>){
     LazyColumn (modifier = modifier) {
         items(taskList.filter { dateFilter == null || it.date.toLocalDate() == dateFilter }.size){
             TicketListItem(dayTicketModel = taskList[it], modifier = Modifier.fillMaxWidth())
@@ -74,4 +108,3 @@ fun TicketListItem(dayTicketModel: DayTicketModel, modifier: Modifier = Modifier
         Text(text = dayTicketModel.date.toString())
     }
 }
-

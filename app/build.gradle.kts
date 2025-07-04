@@ -48,6 +48,8 @@ dependencies {
     coreLibraryDesugaring (libs.desugar.jdk.libs)
 
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.paging.compose)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
