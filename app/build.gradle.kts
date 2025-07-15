@@ -47,6 +47,8 @@ android {
 dependencies {
     coreLibraryDesugaring (libs.desugar.jdk.libs)
 
+    implementation (libs.gson)
+
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.paging.compose)
