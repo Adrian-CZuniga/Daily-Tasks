@@ -6,7 +6,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.dailytasks.model.DayTicketModel
 import com.example.dailytasks.model.TaskSequenceLimitModel
-import com.example.dailytasks.model.generateTicketsModel
 import com.example.dailytasks.pagination.FileTicketsPagingSource
 import kotlinx.coroutines.flow.Flow
 import java.time.Clock
@@ -40,28 +39,32 @@ class TaskRepository(private val context: Context) {
         return listOf(
                 DayTicketModel(
                     name = "Task 1",
-                    date = date.atTime(2, 30),
+                    date = date,
+                    times = listOf(LocalTime.of(12, 30), LocalTime.of(16, 0)),
                     originTaskId = "1",
                     id = "1"
                 ),
                 DayTicketModel(
                     name = "Task 2",
-                    date = date.atTime(6, 0),
+                    date = date,
+                    times = listOf(LocalTime.of(12, 30), LocalTime.of(16, 0)),
                     originTaskId = "2",
                     id = "2"
                 ),
                 DayTicketModel(
                     name = "Task 3",
-                    date = date.atTime(10, 0),
+                    date = date,
+                    times = listOf(LocalTime.of(12, 30), LocalTime.of(16, 0)),
                     originTaskId = "3",
                     id = "3"
                 ),
                 DayTicketModel(
                     name = "Task 4",
-                    date = date.atTime(14, 0),
+                    date = date,
+                    times = listOf(LocalTime.of(12, 30), LocalTime.of(16, 0)),
                     originTaskId = "4",
                     id = "4"
-                )).filter { it.date.toLocalDate() == date }
+                )).filter { it.date == date }
     }
 
     fun getTaskSequenceLimitModel() : TaskSequenceLimitModel {
