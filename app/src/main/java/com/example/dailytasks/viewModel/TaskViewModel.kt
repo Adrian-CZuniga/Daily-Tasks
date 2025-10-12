@@ -12,8 +12,9 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
-class TaskViewModel @Inject constructor(context: Context) : ViewModel() {
-    private val taskRepository = TaskRepository(context)
+class TaskViewModel @Inject constructor(
+    private val taskRepository : TaskRepository
+) : ViewModel() {
     var status : MutableStateFlow<Status> = MutableStateFlow(Status.UNDEFINED)
 
     var dayTickets : MutableStateFlow<List<DayTicketModel>> = MutableStateFlow(listOf())
@@ -31,17 +32,27 @@ class TaskViewModel @Inject constructor(context: Context) : ViewModel() {
         }
     }
 
-    fun getPagedTickets(fromDate: LocalDate) = taskRepository.getPagedTickets(fromDate)
-
-    fun getTicketsByRangeDate(fromDate : LocalDate, toDate : LocalDate) : List<DayTicketModel> {
-        return taskRepository.getTicketsByRangeDate(fromDate, toDate)
-    }
 
     fun getTicketsByDate(date : LocalDate) : List<DayTicketModel> {
-        return taskRepository.getTaskSingleModel(date)
+        return listOf()
     }
 
     fun getTaskSequenceLimitModel() : TaskSequenceLimitModel {
-        return taskRepository.getTaskSequenceLimitModel()
+        return TaskSequenceLimitModel(
+            name = "Test",
+            schedule = mapOf(
+                LocalDate.now().dayOfWeek to listOf(),
+                LocalDate.now().plusDays(1).dayOfWeek to listOf(),
+                LocalDate.now().plusDays(2).dayOfWeek to listOf(
+                    LocalDate.now().atTime(10, 0).toLocalTime()
+                ),
+                LocalDate.now().plusDays(3).dayOfWeek to listOf(
+                    LocalDate.now().atTime(10, 0).toLocalTime(),
+                    LocalDate.now().atTime(15, 0).toLocalTime()
+                ),
+            ),
+            limitDate = LocalDate.now().plusDays(30),
+            id = "test_id_1"
+        )
     }
 }

@@ -1,6 +1,7 @@
 package com.example.dailytasks
 
 import android.content.Context
+import com.example.dailytasks.viewModel.TaskRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,6 +17,12 @@ object AppModule {
     @Singleton
     fun provideContext(@ApplicationContext context: Context): Context {
         return context
+    }
+
+    @Provides
+    @Singleton
+    fun provideTaskRepository(context: Context): TaskRepository {
+        return TaskRepository(context)
     }
 
 }

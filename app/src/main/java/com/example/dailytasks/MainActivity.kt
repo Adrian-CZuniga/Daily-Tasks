@@ -94,7 +94,7 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel : TaskViewModel = hiltVi
 @Composable
 fun TicketListComposable(modifier: Modifier = Modifier, dateFilter : LocalDate? = null, taskList : List<DayTicketModel>){
     LazyColumn (modifier = modifier) {
-        items(taskList.filter { dateFilter == null || it.date.toLocalDate() == dateFilter }.size){
+        items(taskList.filter { dateFilter == null || it.date == dateFilter }.size){
             TicketListItem(dayTicketModel = taskList[it], modifier = Modifier.fillMaxWidth())
         }
     }

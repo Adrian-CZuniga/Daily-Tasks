@@ -31,7 +31,8 @@ fun TaskSequenceLimitModel.generateTicketsModel(fromDate : LocalDate, toDate : L
             dayTickets.add(
                 DayTicketModel(
                     name = this.name,
-                    date = LocalDateTime.of(it, time),
+                    date = it,
+                    times = listOf(time),
                     originTaskId = this.id,
                     id = "${this.id}_${it}_${time}"
                 )
@@ -44,7 +45,7 @@ fun TaskSequenceLimitModel.generateTicketsModel(fromDate : LocalDate, toDate : L
 
 fun TaskSequenceLimitModel.generateDayTicketModel(date : LocalDate) : List<DayTicketModel> {
     return generateTicketsModel(fromDate = date, toDate = date.plusDays(1))
-        .filter { date == it.date.toLocalDate() }
+        .filter { date == it.date }
 }
 
 
@@ -57,7 +58,8 @@ data class TaskSingleModel(
 fun TaskSingleModel.generateDayTicketModel() : DayTicketModel {
     return DayTicketModel(
         name = this.name,
-        date = this.date,
+        date = this.date.toLocalDate(),
+        times = listOf(this.date.toLocalTime()),
         originTaskId = this.id,
         id = this.id
     )
@@ -67,7 +69,8 @@ fun TaskSingleModel.generateDayTicketModel() : DayTicketModel {
 // TaskModel 1:M DayTicketModel
 data class DayTicketModel(
     val name : String,
-    val date : LocalDateTime,
+    val date : LocalDate,
     val originTaskId : String,
+    val times : List<LocalTime> = listOf(),
     val id : String,
 )
