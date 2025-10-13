@@ -8,8 +8,10 @@ import com.example.dailytasks.model.TaskSequenceLimitModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
+import kotlin.to
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(
@@ -41,15 +43,17 @@ class TaskViewModel @Inject constructor(
         return TaskSequenceLimitModel(
             name = "Test",
             schedule = mapOf(
-                LocalDate.now().dayOfWeek to listOf(),
-                LocalDate.now().plusDays(1).dayOfWeek to listOf(),
-                LocalDate.now().plusDays(2).dayOfWeek to listOf(
-                    LocalDate.now().atTime(10, 0).toLocalTime()
-                ),
-                LocalDate.now().plusDays(3).dayOfWeek to listOf(
+                DayOfWeek.MONDAY to listOf(
                     LocalDate.now().atTime(10, 0).toLocalTime(),
                     LocalDate.now().atTime(15, 0).toLocalTime()
                 ),
+                DayOfWeek.WEDNESDAY to listOf(
+                    LocalDate.now().atTime(10, 0).toLocalTime()
+                ),
+                DayOfWeek.FRIDAY to listOf(
+                    LocalDate.now().atTime(10, 0).toLocalTime(),
+                    LocalDate.now().atTime(15, 0).toLocalTime()
+                )
             ),
             limitDate = LocalDate.now().plusDays(30),
             id = "test_id_1"

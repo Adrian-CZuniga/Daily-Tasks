@@ -1,12 +1,24 @@
 package com.example.dailytasks.model
 
+import androidx.compose.ui.graphics.Color
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
+
+enum class TypeTask(val title : String, val color : Color) {
+    PERSONAL("Personal", Color.Blue),
+    STUDY("Study", Color.Red),
+    WORK("Work", Color.Green),
+    HEALTH("Health", Color.Yellow),
+    OTHER("Other", Color.Gray)
+}
+
+
 abstract class TaskModel() {
     abstract val name : String
+    abstract val type : TypeTask
     abstract val id : String
 }
 
@@ -14,6 +26,7 @@ data class TaskSequenceLimitModel(
     override val name : String,
     val schedule : Map<DayOfWeek, List<LocalTime>>,
     val limitDate : LocalDate? = null, // null == no limit == infinite
+    override val type: TypeTask = TypeTask.PERSONAL,
     override val id : String,
 ) : TaskModel()
 
@@ -32,7 +45,7 @@ fun TaskSequenceLimitModel.generateTicketsModel(fromDate : LocalDate, toDate : L
                 DayTicketModel(
                     name = this.name,
                     date = it,
-                    times = listOf(time),
+                    time = time,
                     originTaskId = this.id,
                     id = "${this.id}_${it}_${time}"
                 )
@@ -52,6 +65,7 @@ fun TaskSequenceLimitModel.generateDayTicketModel(date : LocalDate) : List<DayTi
 data class TaskSingleModel(
     override val name : String,
     val date : LocalDateTime,
+    override val type: TypeTask = TypeTask.PERSONAL,
     override val id : String,
 ) : TaskModel()
 
@@ -59,7 +73,7 @@ fun TaskSingleModel.generateDayTicketModel() : DayTicketModel {
     return DayTicketModel(
         name = this.name,
         date = this.date.toLocalDate(),
-        times = listOf(this.date.toLocalTime()),
+        time =  this.date.toLocalTime(),
         originTaskId = this.id,
         id = this.id
     )
@@ -70,7 +84,9 @@ fun TaskSingleModel.generateDayTicketModel() : DayTicketModel {
 data class DayTicketModel(
     val name : String,
     val date : LocalDate,
+    val type : TypeTask = TypeTask.PERSONAL,
     val originTaskId : String,
-    val times : List<LocalTime> = listOf(),
+    val time : LocalTime,
+    val isCompleted : Boolean = false,
     val id : String,
 )
