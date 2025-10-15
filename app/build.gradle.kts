@@ -34,6 +34,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -44,8 +45,13 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring (libs.desugar.jdk.libs)
+
+    implementation (libs.gson)
 
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.paging.compose)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)

@@ -1,42 +1,31 @@
 package com.example.dailytasks.viewModel
 
-import android.os.Build
-import android.util.Log
+import android.content.Context
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.example.dailytasks.model.DayTicketModel
+import com.example.dailytasks.model.TaskModel
+import com.example.dailytasks.model.TaskSequenceLimitModel
+import com.example.dailytasks.pagination.FileTicketsPagingSource
+import kotlinx.coroutines.flow.Flow
 import java.time.Clock
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
 
-class TaskRepository {
-    fun getTicketsByDate(date : LocalDate) : List<DayTicketModel> {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            listOf(
-                DayTicketModel(
-                    name = "Task 1",
-                    date = LocalDate.now(Clock.systemDefaultZone()).atTime(2, 30),
-                    originTaskId = "1",
-                    id = "1"
-                ),
-                DayTicketModel(
-                    name = "Task 2",
-                    date = LocalDate.now(Clock.systemDefaultZone()).atTime(6, 0),
-                    originTaskId = "2",
-                    id = "2"
-                ),
-                DayTicketModel(
-                    name = "Task 3",
-                    date = LocalDate.now(Clock.systemDefaultZone()).atTime(10, 0),
-                    originTaskId = "3",
-                    id = "3"
-                ),
-                DayTicketModel(
-                    name = "Task 4",
-                    date = LocalDate.now(Clock.systemDefaultZone()).atTime(14, 0),
-                    originTaskId = "4",
-                    id = "4"
-                ))
-        } else {
-            Log.e("TaskRepository", "API level is too low")
-            listOf()
-        }
+class TaskRepository(private val context: Context) {
+
+    fun getPagedDayTicketsFromDay(day : LocalDate) : Flow<PagingData<DayTicketModel>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { FileTicketsPagingSource(context,  fromDate = day, 20) }
+        ).flow
+    }
+
+    suspend fun saveTask(task : TaskModel){
     }
 }
