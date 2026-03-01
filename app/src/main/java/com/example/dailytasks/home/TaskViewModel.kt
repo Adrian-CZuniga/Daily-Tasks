@@ -1,17 +1,17 @@
-package com.example.dailytasks.viewModel
+package com.example.dailytasks.home
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dailytasks.model.DayTicketModel
-import com.example.dailytasks.model.TaskSequenceLimitModel
+import com.example.dailytasks.core.data.TaskRepository
+import com.example.dailytasks.core.domain.DayTicketModel
+import com.example.dailytasks.core.domain.Status
+import com.example.dailytasks.core.domain.TaskSequenceLimitModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
-import kotlin.to
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(

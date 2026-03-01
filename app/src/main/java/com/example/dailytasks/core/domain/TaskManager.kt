@@ -1,14 +1,10 @@
-package com.example.dailytasks.viewModel
+package com.example.dailytasks.core.domain
 
 import android.content.Context
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.example.dailytasks.model.DayTicketModel
-import com.example.dailytasks.model.TaskModel
-import com.example.dailytasks.model.TaskSequenceLimitModel
-import com.example.dailytasks.model.TaskSingleModel
-import com.example.dailytasks.pagination.FileTicketsPagingSource
+import com.example.dailytasks.core.utils.FileTicketsPagingSource
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 

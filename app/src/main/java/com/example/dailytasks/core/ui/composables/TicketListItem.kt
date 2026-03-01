@@ -1,4 +1,4 @@
-package com.example.dailytasks.ui.composables
+package com.example.dailytasks.core.ui.composables
 
 import android.text.format.DateFormat
 import androidx.compose.animation.animateColorAsState
@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.example.dailytasks.model.DayTicketModel
+import com.example.dailytasks.core.domain.DayTicketModel
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 

@@ -1,9 +1,9 @@
-package com.example.dailytasks.pagination
+package com.example.dailytasks.core.utils
 
 import android.content.Context
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.example.dailytasks.model.DayTicketModel
+import com.example.dailytasks.core.domain.DayTicketModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

@@ -1,18 +1,14 @@
-package com.example.dailytasks.viewModel
+package com.example.dailytasks.core.data
 
 import android.content.Context
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.example.dailytasks.model.DayTicketModel
-import com.example.dailytasks.model.TaskModel
-import com.example.dailytasks.model.TaskSequenceLimitModel
-import com.example.dailytasks.pagination.FileTicketsPagingSource
+import com.example.dailytasks.core.domain.DayTicketModel
+import com.example.dailytasks.core.domain.TaskModel
+import com.example.dailytasks.core.utils.FileTicketsPagingSource
 import kotlinx.coroutines.flow.Flow
-import java.time.Clock
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalTime
 
 class TaskRepository(private val context: Context) {
 
@@ -22,7 +18,7 @@ class TaskRepository(private val context: Context) {
                 pageSize = 20,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { FileTicketsPagingSource(context,  fromDate = day, 20) }
+            pagingSourceFactory = { FileTicketsPagingSource(context, fromDate = day, 20) }
         ).flow
     }
 

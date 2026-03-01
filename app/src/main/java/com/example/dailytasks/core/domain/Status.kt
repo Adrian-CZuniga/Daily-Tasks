@@ -1,4 +1,4 @@
-package com.example.dailytasks.viewModel
+package com.example.dailytasks.core.domain
 
 enum class Status {
     UNDEFINED,

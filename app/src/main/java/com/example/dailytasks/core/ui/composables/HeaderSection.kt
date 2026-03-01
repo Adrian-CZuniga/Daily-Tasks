@@ -1,4 +1,4 @@
-package com.example.dailytasks.ui.composables
+package com.example.dailytasks.core.ui.composables
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

@@ -1,4 +1,4 @@
-package com.example.dailytasks.ui.theme
+package com.example.dailytasks.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

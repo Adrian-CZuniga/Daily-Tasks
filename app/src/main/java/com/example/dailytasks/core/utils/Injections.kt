@@ -1,7 +1,7 @@
-package com.example.dailytasks
+package com.example.dailytasks.core.utils
 
 import android.content.Context
-import com.example.dailytasks.viewModel.TaskRepository
+import com.example.dailytasks.core.data.TaskRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

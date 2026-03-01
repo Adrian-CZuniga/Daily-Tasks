@@ -1,4 +1,4 @@
-package com.example.dailytasks.files
+package com.example.dailytasks.core.utils
 
 import android.content.Context
 import java.io.File
