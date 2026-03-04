@@ -1,6 +1,7 @@
 package com.example.dailytasks.core.utils
 
 import android.content.Context
+import com.example.dailytasks.core.data.ITaskRepository
 import com.example.dailytasks.core.data.TaskRepository
 import dagger.Module
 import dagger.Provides
@@ -21,7 +22,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTaskRepository(context: Context): TaskRepository {
+    fun provideTaskRepository(context: Context): ITaskRepository {
         return TaskRepository(context)
     }
 

@@ -1,6 +1,5 @@
 package com.example.dailytasks.addtasks
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -24,73 +23,50 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.dailytasks.core.domain.TaskSequenceLimitModel
-import com.example.dailytasks.core.domain.TaskSingleModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.dailytasks.R
 import com.example.dailytasks.core.domain.TypeTask
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.util.UUID
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AddTaskScreen(
-    onNavigateToHomeScreen : () -> Unit = {}
+    onNavigateToHomeScreen : () -> Unit = {},
+    viewModel: AddTaskViewModel = hiltViewModel()
 ){
-    // ── Estado local de la pantalla ───────────────────────────────────────────
-    // Cuando integres el ViewModel, reemplaza estos remember por:
-    //   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    // y cada setter por la llamada correspondiente al ViewModel.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var name      by remember { mutableStateOf("") }
-    var taskMode  by remember { mutableStateOf(TaskFrequency.SINGLE) }
-    var taskType  by remember { mutableStateOf(TypeTask.PERSONAL) }
+    // ── Navegar al inicio cuando se guarde con éxito ─────────────────────────
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
+            onNavigateToHomeScreen()
+        }
+    }
 
-    // Single
-    var singleDate by remember { mutableStateOf<LocalDate?>(null) }
-    var singleTime by remember { mutableStateOf<LocalTime?>(null) }
-
-    // Recurring
-    var schedule   by remember { mutableStateOf<Map<DayOfWeek, List<LocalTime>>>(emptyMap()) }
-    var hasLimit   by remember { mutableStateOf(false) }
-    var limitDate  by remember { mutableStateOf<LocalDate?>(null) }
-
-    // Validación
-    var errors     by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
-    var isSaving   by remember { mutableStateOf(false) }
-
-    // ── Acent color animado al cambiar categoría ──────────────────────────────
+    // ── Accent color animado al cambiar categoría ──────────────────────────────
     val accentColor by animateColorAsState(
-        targetValue   = taskType.brandColor(),
+        targetValue   = uiState.taskType.brandColor(),
         animationSpec = tween(350),
         label         = "accent",
     )
@@ -112,11 +88,7 @@ fun AddTaskScreen(
 
             // ── Header ────────────────────────────────────────────────────────
             ScreenHeader(
-                onNavigateUp = {
-                    // ── LLAMAR AL VIEWMODEL / NAVEGACIÓN ─────────────────────
-                    // navController.navigateUp()
-                    // ─────────────────────────────────────────────────────────
-                },
+                onNavigateUp = onNavigateToHomeScreen,
             )
 
             Spacer(Modifier.height(26.dp))
@@ -143,19 +115,13 @@ fun AddTaskScreen(
                 ) {
 
                     // ── Nombre de la tarea ────────────────────────────────────
-                    InputField(label = "Task Name", error = errors["name"]) {
+                    InputField(label = stringResource(R.string.task_name_label), error = uiState.errors["name"]) {
                         OutlinedTextField(
-                            value         = name,
-                            onValueChange = { newValue ->
-                                name = newValue
-
-                                // ── LLAMAR AL VIEWMODEL ───────────────────────
-                                // viewModel.onNameChange(newValue)
-                                // ─────────────────────────────────────────────
-                            },
+                            value         = uiState.name,
+                            onValueChange = { viewModel.onNameChange(it) },
                             placeholder = {
                                 Text(
-                                    "What needs to be done?",
+                                    stringResource(R.string.task_name_placeholder),
                                     style = MaterialTheme.typography.bodyLarge.copy(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     ),
@@ -173,8 +139,8 @@ fun AddTaskScreen(
                             ),
                             shape  = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor    = if (errors["name"] != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
-                                focusedBorderColor      = if (errors["name"] != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor    = if (uiState.errors["name"] != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
+                                focusedBorderColor      = if (uiState.errors["name"] != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,
                                 cursorColor             = MaterialTheme.colorScheme.primary,
@@ -183,7 +149,7 @@ fun AddTaskScreen(
                     }
 
                     // ── Chips de categoría ────────────────────────────────────
-                    InputField(label = "Category") {
+                    InputField(label = stringResource(R.string.category_label)) {
                         FlowRow(
                             modifier              = Modifier.padding(top = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -192,14 +158,8 @@ fun AddTaskScreen(
                             TypeTask.entries.forEach { type ->
                                 TypeTaskChip(
                                     taskType = type,
-                                    selected = taskType == type,
-                                    onClick  = {
-                                        taskType = type
-
-                                        // ── LLAMAR AL VIEWMODEL ───────────────
-                                        // viewModel.onTypeChange(type)
-                                        // ─────────────────────────────────────
-                                    },
+                                    selected = uiState.taskType == type,
+                                    onClick  = { viewModel.onTypeChange(type) },
                                 )
                             }
                         }
@@ -216,7 +176,7 @@ fun AddTaskScreen(
                     // ── Segmented control de modo ─────────────────────────────
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
-                            text  = "SCHEDULE TYPE",
+                            text  = stringResource(R.string.schedule_type_label),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight    = FontWeight.Bold,
                                 letterSpacing = 0.7.sp,
@@ -232,27 +192,15 @@ fun AddTaskScreen(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             ModeTab(
-                                label    = "📌  One-time",
-                                selected = taskMode == TaskFrequency.SINGLE,
-                                onClick  = {
-                                    taskMode = TaskFrequency.SINGLE
-
-                                    // ── LLAMAR AL VIEWMODEL ───────────────────
-                                    // viewModel.onModeChange(TaskMode.SINGLE)
-                                    // ─────────────────────────────────────────
-                                },
+                                label    = stringResource(R.string.mode_one_time),
+                                selected = uiState.taskMode == TaskMode.SINGLE,
+                                onClick  = { viewModel.onModeChange(TaskMode.SINGLE) },
                                 modifier = Modifier.weight(1f),
                             )
                             ModeTab(
-                                label    = "🔄  Recurring",
-                                selected = taskMode == TaskFrequency.RECURRING,
-                                onClick  = {
-                                    taskMode = TaskFrequency.RECURRING
-
-                                    // ── LLAMAR AL VIEWMODEL ───────────────────
-                                    // viewModel.onModeChange(TaskMode.RECURRING)
-                                    // ─────────────────────────────────────────
-                                },
+                                label    = stringResource(R.string.mode_recurring),
+                                selected = uiState.taskMode == TaskMode.RECURRING,
+                                onClick  = { viewModel.onModeChange(TaskMode.RECURRING) },
                                 modifier = Modifier.weight(1f),
                             )
                         }
@@ -260,7 +208,7 @@ fun AddTaskScreen(
 
                     // ── Sección dinámica (animada) ────────────────────────────
                     AnimatedContent(
-                        targetState = taskMode,
+                        targetState = uiState.taskMode,
                         transitionSpec = {
                             (fadeIn(tween(250)) + slideInVertically { it / 8 })
                                 .togetherWith(fadeOut(tween(150)) + slideOutVertically { -it / 8 })
@@ -268,19 +216,26 @@ fun AddTaskScreen(
                         label = "mode_section",
                     ) { mode ->
                         when (mode) {
-                            TaskFrequency.SINGLE -> SingleTaskSection(
-                                selectedDate = singleDate,
-                                selectedTime = singleTime,
-                                dateError    = errors["singleDate"],
-                                timeError    = errors["singleTime"],
+                            TaskMode.SINGLE -> SingleTaskSection(
+                                selectedDate = uiState.singleDate,
+                                selectedTime = uiState.singleTime,
+                                dateError    = uiState.errors["singleDate"],
+                                timeError    = uiState.errors["singleTime"],
+                                onDateChange = { viewModel.onSingleDateChange(it) },
+                                onTimeChange = { viewModel.onSingleTimeChange(it) }
                             )
-                            TaskFrequency.RECURRING -> RecurringTaskSection(
-                                schedule       = schedule,
-                                hasLimit       = hasLimit,
-                                limitDate      = limitDate,
-                                daysError      = errors["days"],
-                                timesError     = errors["times"],
-                                limitDateError = errors["limitDate"],
+                            TaskMode.RECURRING -> RecurringTaskSection(
+                                schedule       = uiState.schedule,
+                                hasLimit       = uiState.hasLimit,
+                                limitDate      = uiState.limitDate,
+                                daysError      = uiState.errors["days"],
+                                timesError     = uiState.errors["times"],
+                                limitDateError = uiState.errors["limitDate"],
+                                onToggleDay    = { viewModel.onToggleDay(it) },
+                                onAddTime      = { day, time -> viewModel.onAddTime(day, time) },
+                                onRemoveTime   = { day, time -> viewModel.onRemoveTime(day, time) },
+                                onToggleLimit  = { viewModel.onToggleLimit() },
+                                onLimitDateChange = { viewModel.onLimitDateChange(it) }
                             )
                         }
                     }
@@ -291,18 +246,10 @@ fun AddTaskScreen(
 
             // ── Botones de acción ─────────────────────────────────────────────
             ActionButtons(
-                isSaving    = isSaving,
+                isSaving    = uiState.isSaving,
                 accentColor = accentColor,
-                onDiscard   = {
-                    // ── LLAMAR AL VIEWMODEL / NAVEGACIÓN ─────────────────────
-                    // navController.navigateUp()
-                    // ─────────────────────────────────────────────────────────
-                },
-                onSave = {
-                    // ── LLAMAR AL VIEWMODEL ───────────────────────────────────
-                    // viewModel.onSave()
-                    // ─────────────────────────────────────────────────────────
-                },
+                onDiscard   = onNavigateToHomeScreen,
+                onSave      = { viewModel.saveTask() },
             )
 
             Spacer(Modifier.height(32.dp))

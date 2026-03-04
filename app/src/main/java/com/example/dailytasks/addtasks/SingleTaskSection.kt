@@ -1,10 +1,5 @@
 package com.example.dailytasks.addtasks
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,9 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.dailytasks.R
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -42,15 +39,14 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SingleTaskSection(
-    // Valores actuales leídos del ViewModel (o null si aún no se han elegido)
     selectedDate: LocalDate?,
     selectedTime: LocalTime?,
     dateError: String?,
     timeError: String?,
+    onDateChange: (LocalDate) -> Unit,
+    onTimeChange: (LocalTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // ── Estado de visibilidad de diálogos ─────────────────────────────────────
-    // Estos son puramente estado de UI; no tienen valor de negocio.
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -58,22 +54,20 @@ fun SingleTaskSection(
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
     Column(
-        modifier            = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
-
-        // ── Fila fecha / hora ─────────────────────────────────────────────────
         Row(
-            modifier              = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             InputField(
-                label    = "Date",
+                label    = stringResource(R.string.date_label),
                 error    = dateError,
                 modifier = Modifier.weight(1f),
             ) {
                 PickerButton(
-                    text          = selectedDate?.format(dateFormatter) ?: "Select date",
+                    text          = selectedDate?.format(dateFormatter) ?: stringResource(R.string.select_date),
                     isPlaceholder = selectedDate == null,
                     hasError      = dateError != null,
                     leadingEmoji  = "📅",
@@ -81,12 +75,12 @@ fun SingleTaskSection(
                 )
             }
             InputField(
-                label    = "Time",
-                error    = timeError,
+                label = stringResource(R.string.time_label),
+                error = timeError,
                 modifier = Modifier.weight(1f),
             ) {
                 PickerButton(
-                    text          = selectedTime?.format(timeFormatter) ?: "Select time",
+                    text          = selectedTime?.format(timeFormatter) ?: stringResource(R.string.select_time),
                     isPlaceholder = selectedTime == null,
                     hasError      = timeError != null,
                     leadingEmoji  = "🕐",
@@ -95,7 +89,6 @@ fun SingleTaskSection(
             }
         }
 
-        // ── Pill resumen ──────────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -110,15 +103,14 @@ fun SingleTaskSection(
             Text(
                 text = when {
                     selectedDate != null && selectedTime != null ->
-                        "Scheduled · ${selectedDate.format(dateFormatter)} at ${selectedTime.format(timeFormatter)}"
-                    else -> "Pick a date and time above"
+                        stringResource(R.string.scheduled_summary, selectedDate.format(dateFormatter), selectedTime.format(timeFormatter))
+                    else -> stringResource(R.string.pick_date_time_hint)
                 },
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }
     }
 
-    // ── DatePickerDialog ──────────────────────────────────────────────────────
     if (showDatePicker) {
         val pickerState = rememberDatePickerState(
             initialSelectedDateMillis = selectedDate
@@ -135,23 +127,19 @@ fun SingleTaskSection(
                         val date = Instant.ofEpochMilli(millis)
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
-
-                        // ── LLAMAR AL VIEWMODEL ───────────────────────────────
-                        // viewModel.onSingleDateChange(date)
-                        // ─────────────────────────────────────────────────────
+                        onDateChange(date)
                     }
                     showDatePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok_button)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.cancel_button)) }
             },
         ) {
             DatePicker(state = pickerState)
         }
     }
 
-    // ── TimePickerDialog ──────────────────────────────────────────────────────
     if (showTimePicker) {
         val initial     = selectedTime ?: LocalTime.now()
         val pickerState = rememberTimePickerState(
@@ -168,22 +156,18 @@ fun SingleTaskSection(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text("Select time", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.select_time), style = MaterialTheme.typography.titleMedium)
                 TimePicker(state = pickerState)
                 Row(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                    TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.cancel_button)) }
                     TextButton(onClick = {
                         val time = LocalTime.of(pickerState.hour, pickerState.minute)
-
-                        // ── LLAMAR AL VIEWMODEL ───────────────────────────────
-                        // viewModel.onSingleTimeChange(time)
-                        // ─────────────────────────────────────────────────────
-
+                        onTimeChange(time)
                         showTimePicker = false
-                    }) { Text("OK") }
+                    }) { Text(stringResource(R.string.ok_button)) }
                 }
             }
         }

@@ -10,9 +10,9 @@ import com.example.dailytasks.core.utils.FileTicketsPagingSource
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
-class TaskRepository(private val context: Context) {
+class TaskRepository(private val context: Context) : ITaskRepository {
 
-    fun getPagedDayTicketsFromDay(day : LocalDate) : Flow<PagingData<DayTicketModel>> {
+    override fun getPagedDayTicketsFromDay(day: LocalDate): Flow<PagingData<DayTicketModel>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
@@ -22,6 +22,25 @@ class TaskRepository(private val context: Context) {
         ).flow
     }
 
-    suspend fun saveTask(task : TaskModel){
+    override suspend fun saveTask(task: TaskModel) {
+        // Implementación pendiente para persistencia en archivos o base de datos
+    }
+
+    override suspend fun getTaskById(taskId: String): TaskModel? {
+        // Implementación pendiente
+        return null
+    }
+
+    override suspend fun deleteTask(taskId: String) {
+        // Implementación pendiente
+    }
+
+    override suspend fun getAllTasks(): List<TaskModel> {
+        // Implementación pendiente
+        return emptyList()
+    }
+
+    override suspend fun updateTicketCompletion(ticketId: String, isCompleted: Boolean) {
+        // Implementación pendiente
     }
 }

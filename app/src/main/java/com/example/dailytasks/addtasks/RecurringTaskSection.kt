@@ -7,29 +7,21 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -43,9 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.dailytasks.R
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -58,18 +53,19 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecurringTaskSection(
-    // Valores actuales leídos del ViewModel
     schedule: Map<DayOfWeek, List<LocalTime>>,
     hasLimit: Boolean,
     limitDate: LocalDate?,
     daysError: String?,
     timesError: String?,
     limitDateError: String?,
+    onToggleDay: (DayOfWeek) -> Unit,
+    onAddTime: (DayOfWeek, LocalTime) -> Unit,
+    onRemoveTime: (DayOfWeek, LocalTime) -> Unit,
+    onToggleLimit: () -> Unit,
+    onLimitDateChange: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // ── Estado de visibilidad de diálogos ─────────────────────────────────────
-    // Puramente UI: qué día tiene abierto su time picker, y si el date picker de
-    // límite está visible. No contienen ningún valor de negocio.
     var timePickerTargetDay by remember { mutableStateOf<DayOfWeek?>(null) }
     var showLimitDatePicker  by remember { mutableStateOf(false) }
 
@@ -80,35 +76,41 @@ fun RecurringTaskSection(
         modifier            = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-
-        // ── Selector de días ──────────────────────────────────────────────────
-        InputField(label = "Active Days", error = daysError) {
+        InputField(label = stringResource(R.string.active_days_label), error = daysError) {
             Row(
-                modifier              = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment     = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 orderedDays.forEach { day ->
+                    val selected = schedule.containsKey(day)
                     DayChip(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                            .weight(1f)
+                            .border(
+                                width = 2.dp,
+                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                                shape = CircleShape,
+                            )
+                            .clickable(onClick = {
+                                onToggleDay(day)
+                            }),
                         label    = day.getDisplayName(TextStyle.SHORT, Locale.getDefault()).take(2),
                         selected = schedule.containsKey(day),
-                        onClick  = {
-                            // ── LLAMAR AL VIEWMODEL ───────────────────────────
-                            // viewModel.onToggleDay(day)
-                            // ─────────────────────────────────────────────────
-                        },
                     )
                 }
             }
         }
 
-        // ── Time slots por día ────────────────────────────────────────────────
         AnimatedVisibility(
             visible = schedule.isNotEmpty(),
             enter   = expandVertically() + fadeIn(),
             exit    = shrinkVertically() + fadeOut(),
         ) {
-            InputField(label = "Time Slots per Day", error = timesError) {
+            InputField(label = stringResource(R.string.time_slots_label), error = timesError) {
                 Column(
                     modifier            = Modifier.padding(top = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -117,21 +119,17 @@ fun RecurringTaskSection(
                         .filter { schedule.containsKey(it) }
                         .forEach { day ->
                             DayTimeRow(
-                                day          = day,
-                                times        = schedule[day].orEmpty(),
-                                onPickTime   = { timePickerTargetDay = day },
-                                onRemoveTime = { time ->
-                                    // ── LLAMAR AL VIEWMODEL ───────────────────
-                                    // viewModel.onRemoveTime(day, time)
-                                    // ─────────────────────────────────────────
-                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                day = day,
+                                times = schedule[day].orEmpty(),
+                                onPickTime = { timePickerTargetDay = day },
+                                onRemoveTime = { time -> onRemoveTime(day, time) },
                             )
                         }
                 }
             }
         }
 
-        // ── Toggle fecha límite ───────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -142,23 +140,19 @@ fun RecurringTaskSection(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SettingsToggle(
-                label           = "Set End Date",
-                hint            = "Leave off for infinite recurrence",
+                label           = stringResource(R.string.set_end_date_label),
+                hint            = stringResource(R.string.set_end_date_hint),
                 checked         = hasLimit,
-                onCheckedChange = {
-                    // ── LLAMAR AL VIEWMODEL ───────────────────────────────────
-                    // viewModel.onToggleLimit()
-                    // ─────────────────────────────────────────────────────────
-                },
+                onCheckedChange = { onToggleLimit() },
             )
             AnimatedVisibility(
                 visible = hasLimit,
                 enter   = expandVertically() + fadeIn(),
                 exit    = shrinkVertically() + fadeOut(),
             ) {
-                InputField(label = "Until", error = limitDateError) {
+                InputField(label = stringResource(R.string.until_label), error = limitDateError) {
                     PickerButton(
-                        text          = limitDate?.format(limitFormatter) ?: "Select end date",
+                        text          = limitDate?.format(limitFormatter) ?: stringResource(R.string.select_end_date),
                         isPlaceholder = limitDate == null,
                         hasError      = limitDateError != null,
                         leadingEmoji  = "🗓",
@@ -169,7 +163,6 @@ fun RecurringTaskSection(
         }
     }
 
-    // ── TimePickerDialog por día ──────────────────────────────────────────────
     timePickerTargetDay?.let { targetDay ->
         val pickerState = rememberTimePickerState(is24Hour = true)
         Dialog(onDismissRequest = { timePickerTargetDay = null }) {
@@ -182,7 +175,7 @@ fun RecurringTaskSection(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Text(
-                    text  = "Add time · ${targetDay.getDisplayName(TextStyle.FULL, Locale.getDefault())}",
+                    text  = "${stringResource(R.string.add_button)} · ${targetDay.getDisplayName(TextStyle.FULL, Locale.getDefault())}",
                     style = MaterialTheme.typography.titleMedium,
                 )
                 TimePicker(state = pickerState)
@@ -190,22 +183,17 @@ fun RecurringTaskSection(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    TextButton(onClick = { timePickerTargetDay = null }) { Text("Cancel") }
+                    TextButton(onClick = { timePickerTargetDay = null }) { Text(stringResource(R.string.cancel_button)) }
                     TextButton(onClick = {
                         val time = LocalTime.of(pickerState.hour, pickerState.minute)
-
-                        // ── LLAMAR AL VIEWMODEL ───────────────────────────────
-                        // viewModel.onAddTime(targetDay, time)
-                        // ─────────────────────────────────────────────────────
-
+                        onAddTime(targetDay, time)
                         timePickerTargetDay = null
-                    }) { Text("Add") }
+                    }) { Text(stringResource(R.string.add_button)) }
                 }
             }
         }
     }
 
-    // ── DatePickerDialog para fecha límite ────────────────────────────────────
     if (showLimitDatePicker) {
         val pickerState = rememberDatePickerState(
             initialSelectedDateMillis = limitDate
@@ -222,46 +210,35 @@ fun RecurringTaskSection(
                         val date = Instant.ofEpochMilli(millis)
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
-
-                        // ── LLAMAR AL VIEWMODEL ───────────────────────────────
-                        // viewModel.onLimitDateChange(date)
-                        // ─────────────────────────────────────────────────────
+                        onLimitDateChange(date)
                     }
                     showLimitDatePicker = false
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.ok_button)) }
             },
             dismissButton = {
-                TextButton(onClick = { showLimitDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showLimitDatePicker = false }) { Text(stringResource(R.string.cancel_button)) }
             },
         ) { DatePicker(state = pickerState) }
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  DayTimeRow  –  card por día activo con sus chips de horario
-// ─────────────────────────────────────────────────────────────────────────────
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DayTimeRow(
+    modifier: Modifier = Modifier,
     day: DayOfWeek,
     times: List<LocalTime>,
     onPickTime: () -> Unit,
     onRemoveTime: (LocalTime) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val formatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(
-            modifier              = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically,
         ) {
@@ -269,7 +246,7 @@ private fun DayTimeRow(
                 text  = day.getDisplayName(TextStyle.FULL, Locale.getDefault()),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color      = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.primary,
                 ),
             )
             Text(
@@ -299,7 +276,7 @@ private fun DayTimeRow(
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = .12f)),
         ) {
             Text(
-                text  = "+ Add time",
+                text  = stringResource(R.string.add_time_button),
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color      = MaterialTheme.colorScheme.primary,

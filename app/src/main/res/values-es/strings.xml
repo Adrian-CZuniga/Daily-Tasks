@@ -1,2 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="app_name">Tareas Diarias</string>
+    
+    <!-- Main Screen -->
+    <string name="add_task_description">Añadir Tarea</string>
+    
+    <!-- Add Task Screen -->
+    <string name="new_task_header">Nueva Tarea</string>
+    <string name="new_task_subheader">Configura y programa tu tarea</string>
+    <string name="task_name_label">Nombre de la Tarea</string>
+    <string name="task_name_placeholder">¿Qué necesitas hacer?</string>
+    <string name="category_label">Categoría</string>
+    <string name="schedule_type_label">TIPO DE PROGRAMACIÓN</string>
+    <string name="mode_one_time">📌 Una vez</string>
+    <string name="mode_recurring">🔄 Recurrente</string>
+    
+    <!-- Recurring Section -->
+    <string name="active_days_label">Días Activos</string>
+    <string name="time_slots_label">Horarios por Día</string>
+    <string name="set_end_date_label">Establecer Fecha Límite</string>
+    <string name="set_end_date_hint">Desactivar para recurrencia infinita</string>
+    <string name="until_label">Hasta</string>
+    <string name="select_end_date">Selecciona fecha final</string>
+    <string name="add_time_button">+ Añadir hora</string>
+    <string name="cancel_button">Cancelar</string>
+    <string name="add_button">Añadir</string>
+    <string name="ok_button">Aceptar</string>
+    
+    <!-- Single Section -->
+    <string name="date_label">Fecha</string>
+    <string name="time_label">Hora</string>
+    <string name="select_date">Selecciona fecha</string>
+    <string name="select_time">Selecciona hora</string>
+    <string name="scheduled_summary">Programado · %1$s a las %2$s</string>
+    <string name="pick_date_time_hint">Elige una fecha y hora arriba</string>
+    
+    <!-- Action Buttons -->
+    <string name="discard_button">Descartar</string>
+    <string name="save_task_button">Guardar Tarea →</string>
+    
+    <!-- Errors -->
+    <string name="error_name_empty">El nombre no puede estar vacío</string>
+    <string name="error_select_date">Selecciona una fecha</string>
+    <string name="error_select_time">Selecciona una hora</string>
+    <string name="error_select_day">Selecciona al menos un día</string>
+    <string name="error_add_time_slot">Añade al menos un horario</string>
+    <string name="error_select_limit_date">Selecciona una fecha límite</string>
+</resources>

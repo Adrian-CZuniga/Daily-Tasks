@@ -9,13 +9,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.dailytasks.R
 import com.example.dailytasks.core.domain.generateTicketsModel
 import com.example.dailytasks.core.ui.TicketListComposable
 import com.example.dailytasks.core.ui.composables.HeaderSection
@@ -39,12 +42,12 @@ fun MainScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddTask,
-                containerColor = Color(0xFF3FA1C2)
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add Task",
-                    tint = Color.White
+                    contentDescription = stringResource(R.string.add_task_description),
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         },
@@ -55,8 +58,8 @@ fun MainScreen(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                Color(0xFF75BDDA),
-                                Color(0xFF3FA1C2)
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.primaryContainer
                             )
                         )
                     )
@@ -79,4 +82,3 @@ fun MainScreen(
         }
     }
 }
-

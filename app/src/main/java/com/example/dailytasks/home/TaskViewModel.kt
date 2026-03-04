@@ -2,6 +2,7 @@ package com.example.dailytasks.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dailytasks.core.data.ITaskRepository
 import com.example.dailytasks.core.data.TaskRepository
 import com.example.dailytasks.core.domain.DayTicketModel
 import com.example.dailytasks.core.domain.Status
@@ -15,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TaskViewModel @Inject constructor(
-    private val taskRepository : TaskRepository
+    private val taskRepository : ITaskRepository
 ) : ViewModel() {
     var status : MutableStateFlow<Status> = MutableStateFlow(Status.UNDEFINED)
 

@@ -128,22 +128,12 @@ fun TypeTaskChip(
 // ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun DayChip(
+    modifier: Modifier = Modifier,
     label: String,
     selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .size(44.dp)
-            .clip(CircleShape)
-            .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
-            .border(
-                width = 2.dp,
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                shape = CircleShape,
-            )
-            .clickable(onClick = onClick),
+        modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
         Text(

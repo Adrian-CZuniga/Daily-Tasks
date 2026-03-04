@@ -1,6 +1,5 @@
 package com.example.dailytasks.addtasks
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.dailytasks.R
 
 @Composable
 fun ScreenHeader(
@@ -45,7 +46,7 @@ fun ScreenHeader(
         }
         Column {
             Text(
-                text  = "New Task",
+                text  = stringResource(R.string.new_task_header),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight    = FontWeight.Bold,
                     letterSpacing = (-0.5).sp,
@@ -53,7 +54,7 @@ fun ScreenHeader(
                 ),
             )
             Text(
-                text  = "Configure and schedule your task",
+                text  = stringResource(R.string.new_task_subheader),
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }

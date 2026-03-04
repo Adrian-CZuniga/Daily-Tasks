@@ -1,3 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DailyTasks</string>
+    <string name="app_name">Daily Tasks</string>
+    
+    <!-- Main Screen -->
+    <string name="add_task_description">Add Task</string>
+    
+    <!-- Add Task Screen -->
+    <string name="new_task_header">New Task</string>
+    <string name="new_task_subheader">Configure and schedule your task</string>
+    <string name="task_name_label">Task Name</string>
+    <string name="task_name_placeholder">What needs to be done?</string>
+    <string name="category_label">Category</string>
+    <string name="schedule_type_label">SCHEDULE TYPE</string>
+    <string name="mode_one_time">📌 One-time</string>
+    <string name="mode_recurring">🔄 Recurring</string>
+    
+    <!-- Recurring Section -->
+    <string name="active_days_label">Active Days</string>
+    <string name="time_slots_label">Time Slots per Day</string>
+    <string name="set_end_date_label">Set End Date</string>
+    <string name="set_end_date_hint">Leave off for infinite recurrence</string>
+    <string name="until_label">Until</string>
+    <string name="select_end_date">Select end date</string>
+    <string name="add_time_button">+ Add time</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="add_button">Add</string>
+    <string name="ok_button">OK</string>
+    
+    <!-- Single Section -->
+    <string name="date_label">Date</string>
+    <string name="time_label">Time</string>
+    <string name="select_date">Select date</string>
+    <string name="select_time">Select time</string>
+    <string name="scheduled_summary">Scheduled · %1$s at %2$s</string>
+    <string name="pick_date_time_hint">Pick a date and time above</string>
+    
+    <!-- Action Buttons -->
+    <string name="discard_button">Discard</string>
+    <string name="save_task_button">Save Task →</string>
+    
+    <!-- Errors -->
+    <string name="error_name_empty">Name cannot be empty</string>
+    <string name="error_select_date">Select a date</string>
+    <string name="error_select_time">Select a time</string>
+    <string name="error_select_day">Select at least one day</string>
+    <string name="error_add_time_slot">Add at least one time slot</string>
+    <string name="error_select_limit_date">Select a limit date</string>
 </resources>

@@ -12,19 +12,21 @@ import com.example.dailytasks.core.ui.composables.TicketListItem
 import java.time.LocalDate
 
 @Composable
-fun TicketListComposable(modifier: Modifier = Modifier, dateFilter : LocalDate? = null, taskList : List<DayTicketModel>){
-    val filterList = taskList.filter { dateFilter != null || it.date.isEqual(dateFilter) }
-    LazyColumn (
+fun TicketListComposable(
+    modifier: Modifier = Modifier,
+    taskList: List<DayTicketModel>,
+    dateFilter: LocalDate? = null,
+) {
+    val filterList = taskList.filter { dateFilter == null || it.date.isEqual(dateFilter) }
+    LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(filterList){ ticket ->
+        items(filterList) { ticket ->
             TicketListItem(
                 modifier = Modifier.fillMaxWidth(),
                 dayTicketModel = ticket,
-                onToggleComplete = {
-
-                }
+                onToggleComplete = { }
             )
         }
     }
