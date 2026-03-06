@@ -3,6 +3,7 @@ package com.example.dailytasks.core.utils
 import android.content.Context
 import com.example.dailytasks.core.data.ITaskRepository
 import com.example.dailytasks.core.data.TaskRepository
+import com.example.dailytasks.core.domain.TaskManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,8 +23,14 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideTaskManager(context: Context): TaskManager {
+        return TaskManager(context)
+    }
+
+    @Provides
+    @Singleton
     fun provideTaskRepository(context: Context): ITaskRepository {
-        return TaskRepository(context)
+        return TaskRepository(taskManager = provideTaskManager(context))
     }
 
 }

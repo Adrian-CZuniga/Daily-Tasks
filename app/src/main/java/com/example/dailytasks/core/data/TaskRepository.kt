@@ -5,25 +5,22 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.dailytasks.core.domain.DayTicketModel
+import com.example.dailytasks.core.domain.TaskManager
 import com.example.dailytasks.core.domain.TaskModel
+import com.example.dailytasks.core.domain.TaskSequenceLimitModel
+import com.example.dailytasks.core.domain.TaskSingleModel
 import com.example.dailytasks.core.utils.FileTicketsPagingSource
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
+import javax.inject.Inject
 
-class TaskRepository(private val context: Context) : ITaskRepository {
-
+class TaskRepository @Inject constructor(private val taskManager: TaskManager) : ITaskRepository {
     override fun getPagedDayTicketsFromDay(day: LocalDate): Flow<PagingData<DayTicketModel>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 20,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = { FileTicketsPagingSource(context, fromDate = day, 20) }
-        ).flow
+        return taskManager.getPagedTickets(day)
     }
 
     override suspend fun saveTask(task: TaskModel) {
-        // Implementación pendiente para persistencia en archivos o base de datos
+        taskManager.saveTask(task)
     }
 
     override suspend fun getTaskById(taskId: String): TaskModel? {

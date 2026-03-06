@@ -3,6 +3,8 @@ package com.example.dailytasks.core.data
 import androidx.paging.PagingData
 import com.example.dailytasks.core.domain.DayTicketModel
 import com.example.dailytasks.core.domain.TaskModel
+import com.example.dailytasks.core.domain.TaskSequenceLimitModel
+import com.example.dailytasks.core.domain.TaskSingleModel
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -16,6 +18,7 @@ interface ITaskRepository {
      * Guarda una nueva tarea o actualiza una existente.
      */
     suspend fun saveTask(task: TaskModel)
+
 
     /**
      * Obtiene una tarea específica por su ID.

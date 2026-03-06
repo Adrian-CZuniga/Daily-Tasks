@@ -12,14 +12,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dailytasks.R
-import com.example.dailytasks.core.domain.generateTicketsModel
 import com.example.dailytasks.core.ui.TicketListComposable
 import com.example.dailytasks.core.ui.composables.HeaderSection
 import java.time.Clock
@@ -33,7 +34,11 @@ fun MainScreen(
     val today = LocalDate.now(Clock.systemDefaultZone())
     val taskSequenceLimitModel = viewModel.getTaskSequenceLimitModel()
 
-    val paginationTickets = taskSequenceLimitModel.generateTicketsModel(fromDate = today, toDate = today.plusDays(21))
+    val paginationTickets by viewModel.dayTickets.collectAsState()
+    LaunchedEffect(Unit) {
+        viewModel.saveTask(taskSequenceLimitModel)
+    }
+
 
     val date = today
 

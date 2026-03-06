@@ -152,7 +152,7 @@ class AddTaskViewModel @Inject constructor(
 
         task?.let {
             viewModelScope.launch {
-                _uiState.update { it.copy(isSaving = true) }
+                _uiState.update { it -> it.copy(isSaving = true) }
                 repository.saveTask(it)
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
             }

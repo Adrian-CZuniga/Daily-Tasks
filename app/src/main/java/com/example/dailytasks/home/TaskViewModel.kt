@@ -6,6 +6,7 @@ import com.example.dailytasks.core.data.ITaskRepository
 import com.example.dailytasks.core.data.TaskRepository
 import com.example.dailytasks.core.domain.DayTicketModel
 import com.example.dailytasks.core.domain.Status
+import com.example.dailytasks.core.domain.TaskModel
 import com.example.dailytasks.core.domain.TaskSequenceLimitModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +29,7 @@ class TaskViewModel @Inject constructor(
         getActualDayTickets()
     }
 
-    fun getActualDayTickets() {
+    private fun getActualDayTickets() {
         viewModelScope.launch {
             dayTickets.value = getTicketsByDate(LocalDate.now())
             status.value = Status.SUCCESS
@@ -59,5 +60,13 @@ class TaskViewModel @Inject constructor(
             limitDate = LocalDate.now().plusDays(30),
             id = "test_id_1"
         )
+    }
+
+    fun saveTask(
+        taskModel: TaskModel
+    ){
+        viewModelScope.launch {
+            taskRepository.saveTask(taskModel)
+        }
     }
 }
