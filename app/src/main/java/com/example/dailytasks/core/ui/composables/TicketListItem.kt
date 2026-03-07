@@ -159,7 +159,7 @@ fun TicketListItem(
                     .width(4.dp)
                     .height(48.dp)
                     .background(
-                        color = dayTicketModel.type.color,
+                        color = Color(0xFFBDBDBD),
                         shape = RoundedCornerShape(2.dp)
                     )
             )
@@ -171,7 +171,7 @@ fun TicketListItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = dayTicketModel.name,
+                    text = "test",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = if (dayTicketModel.isCompleted) Color.Gray else Color.Black,
@@ -199,12 +199,12 @@ fun TicketListItem(
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
-                        text = dayTicketModel.type.title.uppercase(),
+                        text = "TIPO",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray,
                         modifier = Modifier
                             .background(
-                                color = dayTicketModel.type.color.copy(alpha = 0.1f),
+                                color = Color(0xFFF0F0F0),
                                 shape = RoundedCornerShape(4.dp)
                             )
                             .padding(horizontal = 6.dp, vertical = 2.dp)

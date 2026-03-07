@@ -5,6 +5,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
+
 data class TaskSequenceLimitModel(
     override val name : String,
     val schedule : Map<DayOfWeek, List<LocalTime>>,
@@ -19,16 +20,15 @@ data class TaskSequenceLimitModel(
         val dayTickets = mutableListOf<DayTicketModel>()
 
         val rangeDays = fromDate.datesUntil(toDate)
-        rangeDays.forEach {
-            val times = schedule[it.dayOfWeek] ?: listOf()
+        rangeDays.forEach { date ->
+            val times = schedule[date.dayOfWeek] ?: listOf()
             times.forEach { time ->
                 dayTickets.add(
                     DayTicketModel(
-                        name = this.name,
-                        date = it,
+                        date = date,
                         time = time,
                         originTaskId = this.id,
-                        id = "${this.id}_${it}_${time}"
+                        id = DayTicketModel.createId(id, date, time)
                     )
                 )
             }
@@ -38,6 +38,7 @@ data class TaskSequenceLimitModel(
     }
 }
 
+
 @Serializable
 data class TaskSequenceLimitDto(
     val id: String,
@@ -46,6 +47,7 @@ data class TaskSequenceLimitDto(
     val schedule: Map<String, List<@Serializable(with = LocalTimeSerializer::class) LocalTime>>,
     @Serializable(with = LocalDateSerializer::class) val limitDate: LocalDate? = null
 )
+
 
 
 // --- Mapping Extensions ---

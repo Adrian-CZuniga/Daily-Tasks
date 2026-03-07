@@ -8,48 +8,28 @@ import com.example.dailytasks.core.utils.FileTicketsPagingSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.File
 import java.time.LocalDate
+import java.time.LocalTime
 
 class TaskManager(private val context: Context) {
-
     fun getPagedTickets(fromDate: LocalDate): Flow<PagingData<DayTicketModel>> {
         return Pager(PagingConfig(pageSize = 10)) {
             FileTicketsPagingSource(context, fromDate, pageSize = 10)
         }.flow
     }
 
-
     fun saveTask(task: TaskModel) {
-        when (task) {
-            is TaskSequenceLimitModel -> saveTaskSequenceLimitModel(task)
-            is TaskSingleModel -> saveTaskSingleModel(task)
+        val jsonString = when (task) {
+            is TaskSequenceLimitModel -> json.encodeToString(task.toDto())
             else -> {
-                return
+                throw IllegalArgumentException("Invalid task type")
             }
-        }.apply {
-            createDayTicketModel(task)
         }
+        writeTaskFile(task.id, jsonString)
+
+        createDayTicketModel(task)
     }
-
-    private fun saveTaskSequenceLimitModel(task: TaskSequenceLimitModel) {
-        // Lógica para guardar una tarea de secuencia limitada
-        val taskDTO = task.toDto()
-        val json = json.encodeToString(taskDTO)
-
-        context.openFileOutput(task.id, Context.MODE_PRIVATE).use {
-            it.write(json.toByteArray())
-        }
-    }
-
-    private fun saveTaskSingleModel(task: TaskSingleModel) {
-        // Lógica para guardar una tarea única
-        val taskDTO = task.toDto()
-        val json = json.encodeToString(taskDTO)
-        context.openFileOutput(task.id, Context.MODE_PRIVATE).use {
-            it.write(json.toByteArray())
-        }
-    }
-
 
     private fun createDayTicketModel(task: TaskModel){
         val dailyTickets = when (task) {
@@ -59,7 +39,6 @@ class TaskManager(private val context: Context) {
 
                 task.createDayTicketModels(now, toDate)
             }
-            is TaskSingleModel -> listOf(task.createDayTicketModel())
             else -> emptyList()
         }
 
@@ -75,9 +54,25 @@ class TaskManager(private val context: Context) {
         context.openFileOutput(dayTicketModel.id, Context.MODE_PRIVATE).use {
             it.write(json.toByteArray())
         }
+    }
+    private fun getTasksDirectory(): File {
+        val dir = File(context.filesDir, "tasks")
 
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+
+        return dir
     }
 
+    private fun writeTaskFile(id: String, json: String) {
+
+        val tasksDir = getTasksDirectory()
+
+        val file = File(tasksDir, "$id.json")
+
+        file.writeText(json)
+    }
     companion object JsonManager {
         private val json = Json {
             ignoreUnknownKeys = true

@@ -7,19 +7,18 @@ import java.time.LocalTime
 
 data class TaskSingleModel(
     override val name : String,
-    val date : LocalDateTime,
+    val date : LocalDate,
+    val time : LocalTime,
     override val type: TypeTask = TypeTask.PERSONAL,
     override val id : String,
 ) : TaskModel() {
     fun createDayTicketModel(): DayTicketModel {
         return DayTicketModel(
-            name = this.name,
-            date = this.date.toLocalDate(),
-            time =  this.date.toLocalTime(),
+            date = date,
+            time =  time,
             originTaskId = this.id,
-            id = this.id
+            id = DayTicketModel.createId(id, this.date, this.time)
         )
-
     }
 }
 
@@ -33,17 +32,20 @@ data class TaskSingleDto(
     @Serializable(with = LocalTimeSerializer::class) val time: LocalTime
 )
 
+
+
 fun TaskSingleModel.toDto() = TaskSingleDto(
     id = id,
     name = name,
     type = type.name,
-    date = date.toLocalDate(),
-    time = date.toLocalTime()
+    date = date,
+    time = time
 )
 
 fun TaskSingleDto.toDomain() = TaskSingleModel(
     id = id,
     name = name,
-    date = LocalDateTime.of(date, time),
-    type = TypeTask.valueOf(type),
+    date = date,
+    time = time,
+    type = TypeTask.valueOf(type)
 )

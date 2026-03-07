@@ -14,22 +14,25 @@ abstract class TaskModel() {
 
 
 
+
 // TaskModel 1:M DayTicketModel
 data class DayTicketModel(
-    val name : String,
     val date : LocalDate,
-    val type : TypeTask = TypeTask.PERSONAL,
     val originTaskId : String,
     val time : LocalTime,
     val isCompleted : Boolean = false,
     val id : String,
-)
+){
+    companion object {
+        fun createId(originTaskId : String, date : LocalDate, time : LocalTime) : String {
+            return "ticket_${originTaskId}_${date}_${time}"
+        }
+    }
+}
 
 @Serializable
 data class DayTicketDTO(
-    val name : String,
     val date : @Serializable(with = LocalDateSerializer::class) LocalDate,
-    val type : TypeTask = TypeTask.PERSONAL,
     val originTaskId : String,
     val time : @Serializable(with = LocalTimeSerializer::class) LocalTime,
     val isCompleted : Boolean = false,
@@ -37,9 +40,7 @@ data class DayTicketDTO(
 )
 
 fun DayTicketModel.toDto() = DayTicketDTO(
-    name = name,
     date = date,
-    type = type,
     originTaskId = originTaskId,
     time = time,
     isCompleted = isCompleted,
@@ -47,9 +48,7 @@ fun DayTicketModel.toDto() = DayTicketDTO(
 )
 
 fun DayTicketDTO.toDomain() = DayTicketModel(
-    name = name,
     date = date,
-    type = type,
     originTaskId = originTaskId,
     time = time,
     isCompleted = isCompleted,

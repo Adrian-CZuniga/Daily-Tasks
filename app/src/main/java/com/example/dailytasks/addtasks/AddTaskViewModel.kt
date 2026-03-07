@@ -122,7 +122,8 @@ class AddTaskViewModel @Inject constructor(
                 if (newErrors.isEmpty()) {
                     TaskSingleModel(
                         name = state.name,
-                        date = state.singleDate!!.atTime(state.singleTime!!),
+                        date = state.singleDate!!,
+                        time = state.singleTime!!,
                         type = state.taskType,
                         id = UUID.randomUUID().toString()
                     )

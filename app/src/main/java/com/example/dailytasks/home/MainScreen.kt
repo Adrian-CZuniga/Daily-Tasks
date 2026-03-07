@@ -40,8 +40,6 @@ fun MainScreen(
     }
 
 
-    val date = today
-
     Scaffold(modifier = Modifier
         .fillMaxSize(),
         floatingActionButton = {
@@ -69,7 +67,7 @@ fun MainScreen(
                         )
                     )
                     .padding(24.dp),
-                date = date,
+                date = today,
             )
         }
     ){
@@ -81,7 +79,7 @@ fun MainScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                dateFilter = date,
+                dateFilter = today,
                 taskList = paginationTickets
             )
         }

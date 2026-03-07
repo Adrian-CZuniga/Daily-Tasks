@@ -16,12 +16,19 @@ class FileTicketsPagingSource(
 ) : PagingSource<Int, DayTicketModel>() {
 
     private val allTicketFiles: List<File> by lazy {
-        context.filesDir
-            .listFiles { file -> file.name.startsWith("ticket_") && file.name.endsWith(".json") }
+        val ticketsDir = File(context.filesDir, "tickets")
+
+        if (!ticketsDir.exists()) {
+            ticketsDir.mkdirs()
+        }
+
+        ticketsDir
+            .listFiles { file ->
+                file.name.startsWith("ticket_") && file.name.endsWith(".json")
+            }
             ?.sortedBy { it.name }
             ?: emptyList()
     }
-
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, DayTicketModel> {
         return try {
             val page = params.key ?: 0
