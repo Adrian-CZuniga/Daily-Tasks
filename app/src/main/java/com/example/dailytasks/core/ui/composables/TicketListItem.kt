@@ -38,14 +38,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.example.dailytasks.core.domain.TicketModel
+import com.example.dailytasks.core.domain.DailyTaskModel
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
 fun TicketListItem(
     modifier: Modifier = Modifier,
-    ticketModel: TicketModel,
+    dailyTaskModel: DailyTaskModel,
     onToggleComplete: (String) -> Unit
 
 ){
@@ -58,33 +58,33 @@ fun TicketListItem(
     val formatter = DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
 
     val borderColor by animateColorAsState(
-        targetValue = if (ticketModel.isCompleted) Color(0xFF4CAF50) else Color.Transparent,
+        targetValue = if (dailyTaskModel.isCompleted) Color(0xFF4CAF50) else Color.Transparent,
         animationSpec = tween(300),
         label = "border"
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (ticketModel.isCompleted) Color(0xFFE8F5E9) else Color.White,
+        targetValue = if (dailyTaskModel.isCompleted) Color(0xFFE8F5E9) else Color.White,
         animationSpec = tween(300),
         label = "background"
     )
 
     val scale by animateFloatAsState(
-        targetValue = if (ticketModel.isCompleted) 0.98f else 1f,
+        targetValue = if (dailyTaskModel.isCompleted) 0.98f else 1f,
         animationSpec = tween(200),
         label = "scale"
     )
 
     Card(
         modifier = modifier
-            .clickable { onToggleComplete(ticketModel.ticketId) },
+            .clickable { onToggleComplete(dailyTaskModel.ticketId) },
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor
         ),
         border = BorderStroke(2.dp, borderColor),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (ticketModel.isCompleted) 1.dp else 2.dp
+            defaultElevation = if (dailyTaskModel.isCompleted) 1.dp else 2.dp
         )
     ) {
         Row(
@@ -98,18 +98,18 @@ fun TicketListItem(
                 modifier = Modifier
                     .size(28.dp)
                     .background(
-                        color = if (ticketModel.isCompleted) Color(0xFF4CAF50) else Color.Transparent,
+                        color = if (dailyTaskModel.isCompleted) Color(0xFF4CAF50) else Color.Transparent,
                         shape = CircleShape
                     )
                     .then(
-                        if (!ticketModel.isCompleted) Modifier.background(
+                        if (!dailyTaskModel.isCompleted) Modifier.background(
                             color = Color.Transparent,
                             shape = CircleShape
                         ) else Modifier
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                if (!ticketModel.isCompleted) {
+                if (!dailyTaskModel.isCompleted) {
                     Box(
                         modifier = Modifier
                             .size(28.dp)
@@ -174,8 +174,8 @@ fun TicketListItem(
                     text = "test",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (ticketModel.isCompleted) Color.Gray else Color.Black,
-                    textDecoration = if (ticketModel.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                    color = if (dailyTaskModel.isCompleted) Color.Gray else Color.Black,
+                    textDecoration = if (dailyTaskModel.isCompleted) TextDecoration.LineThrough else TextDecoration.None
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -191,7 +191,7 @@ fun TicketListItem(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = ticketModel.time.format(formatter),
+                        text = dailyTaskModel.time.format(formatter),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )

@@ -1,7 +1,6 @@
 package com.example.dailytasks.core.data
 
-import androidx.paging.PagingData
-import com.example.dailytasks.core.domain.TicketModel
+import com.example.dailytasks.core.domain.DailyTaskModel
 import com.example.dailytasks.core.domain.TaskModel
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -10,7 +9,7 @@ interface ITaskRepository {
     /**
      * Obtiene un flujo de datos paginados de tickets para un día específico.
      */
-    fun getPagedDayTicketsFromDay(day: LocalDate): Flow<PagingData<TicketModel>>
+    fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>>
 
     /**
      * Guarda una nueva tarea o actualiza una existente.

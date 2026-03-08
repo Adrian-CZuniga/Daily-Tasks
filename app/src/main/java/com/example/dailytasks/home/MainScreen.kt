@@ -33,10 +33,11 @@ fun MainScreen(
 ){
     val today = LocalDate.now(Clock.systemDefaultZone())
     val taskSequenceLimitModel = viewModel.getTaskSequenceLimitModel()
+    val taskSingleModel = viewModel.getTaskSingleModel()
 
-    val paginationTickets by viewModel.dayTickets.collectAsState()
+    val dailyTaskModels by viewModel.dayTickets.collectAsState()
     LaunchedEffect(Unit) {
-        viewModel.saveTask(taskSequenceLimitModel)
+
     }
 
 
@@ -80,7 +81,7 @@ fun MainScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 dateFilter = today,
-                taskList = paginationTickets
+                taskList = dailyTaskModels
             )
         }
     }

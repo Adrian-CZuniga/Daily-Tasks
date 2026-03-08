@@ -1,7 +1,6 @@
 package com.example.dailytasks.core.data
 
-import androidx.paging.PagingData
-import com.example.dailytasks.core.domain.TicketModel
+import com.example.dailytasks.core.domain.DailyTaskModel
 import com.example.dailytasks.core.domain.TaskManager
 import com.example.dailytasks.core.domain.TaskModel
 import kotlinx.coroutines.flow.Flow
@@ -9,8 +8,8 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 class TaskRepository @Inject constructor(private val taskManager: TaskManager) : ITaskRepository {
-    override fun getPagedDayTicketsFromDay(day: LocalDate): Flow<PagingData<TicketModel>> {
-        return taskManager.getPagedTickets(day)
+    override fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>> {
+        return taskManager.getDailyTasks(day)
     }
 
     override suspend fun saveTask(task: TaskModel) {

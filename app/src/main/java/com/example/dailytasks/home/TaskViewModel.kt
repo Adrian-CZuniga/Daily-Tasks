@@ -3,12 +3,19 @@ package com.example.dailytasks.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dailytasks.core.data.ITaskRepository
-import com.example.dailytasks.core.domain.TicketModel
+import com.example.dailytasks.core.domain.DailyTaskModel
 import com.example.dailytasks.core.domain.Status
 import com.example.dailytasks.core.domain.TaskModel
 import com.example.dailytasks.core.domain.TaskSequenceLimitModel
+import com.example.dailytasks.core.domain.TaskSingleModel
+import com.example.dailytasks.core.domain.TypeTask
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -19,30 +26,34 @@ class TaskViewModel @Inject constructor(
     private val taskRepository : ITaskRepository
 ) : ViewModel() {
     var status : MutableStateFlow<Status> = MutableStateFlow(Status.UNDEFINED)
+    private val _selectedDay : MutableStateFlow<LocalDate> = MutableStateFlow(LocalDate.now())
+    val selectedDay = _selectedDay.asStateFlow()
 
-    var dayTickets : MutableStateFlow<List<TicketModel>> = MutableStateFlow(listOf())
-        private set
-
-    init {
-        status.value = Status.LOADING
-        getActualDayTickets()
-    }
-
-    private fun getActualDayTickets() {
-        viewModelScope.launch {
-            dayTickets.value = getTicketsByDate(LocalDate.now())
-            status.value = Status.SUCCESS
-        }
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    var dayTickets : StateFlow<List<DailyTaskModel>> = selectedDay
+        .flatMapLatest {
+            taskRepository.getDailyTasks(it)
+        }.stateIn(
+            scope = viewModelScope,
+            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
 
-    fun getTicketsByDate(date : LocalDate) : List<TicketModel> {
-        return listOf()
+
+    fun getTaskSingleModel() : TaskSingleModel {
+        return TaskSingleModel(
+            name = "Test",
+            date = LocalDate.now(),
+            time = LocalDate.now().atTime(10, 0)
+                .toLocalTime(),
+            id = TaskModel.createId(name = "Test tarea single", type = TypeTask.PERSONAL)
+        )
     }
 
     fun getTaskSequenceLimitModel() : TaskSequenceLimitModel {
         return TaskSequenceLimitModel(
-            name = "Test",
+            name = "test tarea secuencial",
             schedule = mapOf(
                 DayOfWeek.MONDAY to listOf(
                     LocalDate.now().atTime(10, 0).toLocalTime(),
@@ -57,10 +68,13 @@ class TaskViewModel @Inject constructor(
                 )
             ),
             limitDate = LocalDate.now().plusDays(30),
-            id = "test_id_1"
+            id = TaskModel.createId(name = "Test", type = TypeTask.PERSONAL)
         )
     }
 
+    fun changeDay(newDate: LocalDate) {
+        _selectedDay.value = newDate
+    }
     fun saveTask(
         taskModel: TaskModel
     ){
