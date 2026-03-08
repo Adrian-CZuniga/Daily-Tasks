@@ -1,21 +1,15 @@
 package com.example.dailytasks.core.data
 
-import android.content.Context
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.example.dailytasks.core.domain.DayTicketModel
+import com.example.dailytasks.core.domain.TicketModel
 import com.example.dailytasks.core.domain.TaskManager
 import com.example.dailytasks.core.domain.TaskModel
-import com.example.dailytasks.core.domain.TaskSequenceLimitModel
-import com.example.dailytasks.core.domain.TaskSingleModel
-import com.example.dailytasks.core.utils.FileTicketsPagingSource
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import javax.inject.Inject
 
 class TaskRepository @Inject constructor(private val taskManager: TaskManager) : ITaskRepository {
-    override fun getPagedDayTicketsFromDay(day: LocalDate): Flow<PagingData<DayTicketModel>> {
+    override fun getPagedDayTicketsFromDay(day: LocalDate): Flow<PagingData<TicketModel>> {
         return taskManager.getPagedTickets(day)
     }
 

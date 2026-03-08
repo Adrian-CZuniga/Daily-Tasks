@@ -3,8 +3,7 @@ package com.example.dailytasks.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dailytasks.core.data.ITaskRepository
-import com.example.dailytasks.core.data.TaskRepository
-import com.example.dailytasks.core.domain.DayTicketModel
+import com.example.dailytasks.core.domain.TicketModel
 import com.example.dailytasks.core.domain.Status
 import com.example.dailytasks.core.domain.TaskModel
 import com.example.dailytasks.core.domain.TaskSequenceLimitModel
@@ -21,7 +20,7 @@ class TaskViewModel @Inject constructor(
 ) : ViewModel() {
     var status : MutableStateFlow<Status> = MutableStateFlow(Status.UNDEFINED)
 
-    var dayTickets : MutableStateFlow<List<DayTicketModel>> = MutableStateFlow(listOf())
+    var dayTickets : MutableStateFlow<List<TicketModel>> = MutableStateFlow(listOf())
         private set
 
     init {
@@ -37,7 +36,7 @@ class TaskViewModel @Inject constructor(
     }
 
 
-    fun getTicketsByDate(date : LocalDate) : List<DayTicketModel> {
+    fun getTicketsByDate(date : LocalDate) : List<TicketModel> {
         return listOf()
     }
 

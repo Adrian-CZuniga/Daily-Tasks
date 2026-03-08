@@ -3,7 +3,7 @@ package com.example.dailytasks.core.utils
 import android.content.Context
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.example.dailytasks.core.domain.DayTicketModel
+import com.example.dailytasks.core.domain.TicketModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -13,7 +13,7 @@ class FileTicketsPagingSource(
     private val context: Context,
     private val fromDate : LocalDate,
     private val pageSize: Int
-) : PagingSource<Int, DayTicketModel>() {
+) : PagingSource<Int, TicketModel>() {
 
     private val allTicketFiles: List<File> by lazy {
         val ticketsDir = File(context.filesDir, "tickets")
@@ -29,7 +29,7 @@ class FileTicketsPagingSource(
             ?.sortedBy { it.name }
             ?: emptyList()
     }
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, DayTicketModel> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TicketModel> {
         return try {
             val page = params.key ?: 0
             val fromIndex = page * pageSize
@@ -56,9 +56,9 @@ class FileTicketsPagingSource(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, DayTicketModel>): Int = 0
+    override fun getRefreshKey(state: PagingState<Int, TicketModel>): Int = 0
 
-    private fun decodeDayTicketJson(json: String): DayTicketModel? {
+    private fun decodeDayTicketJson(json: String): TicketModel? {
         return null
     }
 }

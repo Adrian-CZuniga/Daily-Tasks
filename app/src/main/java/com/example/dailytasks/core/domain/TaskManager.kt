@@ -10,10 +10,10 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.LocalDate
-import java.time.LocalTime
+import kotlin.collections.emptyList
 
 class TaskManager(private val context: Context) {
-    fun getPagedTickets(fromDate: LocalDate): Flow<PagingData<DayTicketModel>> {
+    fun getPagedTickets(fromDate: LocalDate): Flow<PagingData<TicketModel>> {
         return Pager(PagingConfig(pageSize = 10)) {
             FileTicketsPagingSource(context, fromDate, pageSize = 10)
         }.flow
@@ -22,6 +22,7 @@ class TaskManager(private val context: Context) {
     fun saveTask(task: TaskModel) {
         val jsonString = when (task) {
             is TaskSequenceLimitModel -> json.encodeToString(task.toDto())
+            is TaskSingleModel -> json.encodeToString(task.toDto())
             else -> {
                 throw IllegalArgumentException("Invalid task type")
             }
@@ -33,6 +34,8 @@ class TaskManager(private val context: Context) {
 
     private fun createDayTicketModel(task: TaskModel){
         val dailyTickets = when (task) {
+            is TaskSingleModel -> listOf(task.createDayTicketModel())
+
             is TaskSequenceLimitModel -> {
                 val now = LocalDate.now()
                 val toDate = now.plusDays(30)
@@ -47,16 +50,39 @@ class TaskManager(private val context: Context) {
         }
     }
 
-    private fun saveDayTicketModel(dayTicketModel: DayTicketModel){
-        val ticketDTO = dayTicketModel.toDto()
+    private fun saveDayTicketModel(ticketModel: TicketModel){
+        val ticketDTO = ticketModel.toDto()
         val json = json.encodeToString(ticketDTO)
 
-        context.openFileOutput(dayTicketModel.id, Context.MODE_PRIVATE).use {
-            it.write(json.toByteArray())
-        }
+        writeTicketFile(ticketModel.ticketId, json, ticketModel.date)
     }
+
+    private fun getTicketDirectoryByDay(byDay : LocalDate) : File {
+        val dir = File(context.filesDir, "tickets")
+
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+        val dayDir = File(dir, byDay.toString())
+
+        if (!dayDir.exists()) {
+            dayDir.mkdirs()
+        }
+        return dayDir
+    }
+
+    private fun writeTicketFile(id: String, json: String, dayTask: LocalDate) {
+        val dayDir = getTicketDirectoryByDay(dayTask)
+        val file = File(dayDir, "$id.json")
+
+        file.writeText(json)
+
+    }
+
+
+
     private fun getTasksDirectory(): File {
-        val dir = File(context.filesDir, "tasks")
+        val dir = File(context.filesDir, "tasks_configurations")
 
         if (!dir.exists()) {
             dir.mkdirs()

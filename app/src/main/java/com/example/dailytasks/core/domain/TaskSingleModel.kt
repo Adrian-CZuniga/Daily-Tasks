@@ -2,7 +2,6 @@ package com.example.dailytasks.core.domain
 
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 
 data class TaskSingleModel(
@@ -12,12 +11,12 @@ data class TaskSingleModel(
     override val type: TypeTask = TypeTask.PERSONAL,
     override val id : String,
 ) : TaskModel() {
-    fun createDayTicketModel(): DayTicketModel {
-        return DayTicketModel(
+    fun createDayTicketModel(): TicketModel {
+        return TicketModel(
             date = date,
             time =  time,
-            originTaskId = this.id,
-            id = DayTicketModel.createId(id, this.date, this.time)
+            taskId = this.id,
+            ticketId = TicketModel.createId(id, this.date, this.time)
         )
     }
 }

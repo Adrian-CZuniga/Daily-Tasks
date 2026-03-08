@@ -13,22 +13,23 @@ data class TaskSequenceLimitModel(
     override val type: TypeTask = TypeTask.PERSONAL,
     override val id : String,
 ) : TaskModel() {
-    fun createDayTicketModels(fromDate : LocalDate, toDate : LocalDate): List<DayTicketModel> {
+    fun createDayTicketModels(fromDate : LocalDate, toDate : LocalDate): List<TicketModel> {
         if (fromDate > limitDate) return listOf()
         if (toDate > limitDate && limitDate != null) return createDayTicketModels(fromDate, limitDate)
 
-        val dayTickets = mutableListOf<DayTicketModel>()
+        val dayTickets = mutableListOf<TicketModel>()
 
         val rangeDays = fromDate.datesUntil(toDate)
         rangeDays.forEach { date ->
             val times = schedule[date.dayOfWeek] ?: listOf()
             times.forEach { time ->
                 dayTickets.add(
-                    DayTicketModel(
+                    TicketModel(
                         date = date,
                         time = time,
-                        originTaskId = this.id,
-                        id = DayTicketModel.createId(id, date, time)
+                        isCompleted = false,
+                        ticketId = TicketModel.createId(id, date, time),
+                        taskId = id
                     )
                 )
             }
