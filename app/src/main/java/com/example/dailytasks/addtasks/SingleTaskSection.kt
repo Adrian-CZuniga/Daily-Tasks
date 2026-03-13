@@ -7,10 +7,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.Event
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,11 +59,11 @@ fun SingleTaskSection(
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier            = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier              = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             InputField(
@@ -70,20 +75,20 @@ fun SingleTaskSection(
                     text          = selectedDate?.format(dateFormatter) ?: stringResource(R.string.select_date),
                     isPlaceholder = selectedDate == null,
                     hasError      = dateError != null,
-                    leadingEmoji  = "📅",
+                    leadingIcon   = Icons.Rounded.Event,
                     onClick       = { showDatePicker = true },
                 )
             }
             InputField(
-                label = stringResource(R.string.time_label),
-                error = timeError,
+                label    = stringResource(R.string.time_label),
+                error    = timeError,
                 modifier = Modifier.weight(1f),
             ) {
                 PickerButton(
                     text          = selectedTime?.format(timeFormatter) ?: stringResource(R.string.select_time),
                     isPlaceholder = selectedTime == null,
                     hasError      = timeError != null,
-                    leadingEmoji  = "🕐",
+                    leadingIcon   = Icons.Rounded.AccessTime,
                     onClick       = { showTimePicker = true },
                 )
             }
@@ -99,7 +104,12 @@ fun SingleTaskSection(
             verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("📅", fontSize = 18.sp)
+            Icon(
+                imageVector = Icons.Rounded.Event,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
             Text(
                 text = when {
                     selectedDate != null && selectedTime != null ->

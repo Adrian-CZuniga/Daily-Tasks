@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -73,7 +75,7 @@ fun RecurringTaskSection(
     val limitFormatter = remember { DateTimeFormatter.ofPattern("dd MMM yyyy") }
 
     Column(
-        modifier            = modifier.fillMaxWidth(),
+        modifier  = modifier,
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         InputField(label = stringResource(R.string.active_days_label), error = daysError) {
@@ -100,6 +102,7 @@ fun RecurringTaskSection(
                             }),
                         label    = day.getDisplayName(TextStyle.SHORT, Locale.getDefault()).take(2),
                         selected = schedule.containsKey(day),
+                        onClick  = { onToggleDay(day) },
                     )
                 }
             }
@@ -155,7 +158,7 @@ fun RecurringTaskSection(
                         text          = limitDate?.format(limitFormatter) ?: stringResource(R.string.select_end_date),
                         isPlaceholder = limitDate == null,
                         hasError      = limitDateError != null,
-                        leadingEmoji  = "🗓",
+                        leadingIcon  = Icons.Rounded.DateRange,
                         onClick       = { showLimitDatePicker = true },
                     )
                 }

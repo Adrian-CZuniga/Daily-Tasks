@@ -1,6 +1,7 @@
 package com.example.dailytasks.addtasks
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -23,6 +24,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,10 +39,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dailytasks.core.domain.TypeTask
+import com.example.dailytasks.core.domain.brandColor
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  InputField  –  label + content slot + animated error message
@@ -50,14 +59,14 @@ fun InputField(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = label.uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight    = FontWeight.Bold,
-                letterSpacing = 0.7.sp,
-                color         = MaterialTheme.colorScheme.background,
+                letterSpacing = 1.sp,
+                color         = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
         )
         content()
@@ -67,10 +76,16 @@ fun InputField(
             exit    = shrinkVertically() + fadeOut(),
         ) {
             Row(
-                verticalAlignment     = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Text("⚠", fontSize = 11.sp)
+                Icon(
+                    imageVector = Icons.Rounded.ErrorOutline,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.error
+                )
                 Text(
                     text  = error.orEmpty(),
                     style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.error),
@@ -90,37 +105,64 @@ fun TypeTaskChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val chipColor = taskType.brandColor()
+    val brandColor = taskType.brandColor()
+    
+    val contentColor = if (selected) {
+        if (brandColor.luminance() > 0.5f) brandColor.darken(0.3f) else brandColor
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) brandColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        label = "chipBackground"
+    )
+    
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) brandColor else Color.Transparent,
+        label = "chipBorder"
+    )
+
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(if (selected) chipColor.copy(alpha = .13f) else MaterialTheme.colorScheme.surfaceVariant)
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
             .border(
-                width = 2.dp,
-                color = if (selected) chipColor else Color.Transparent,
-                shape = RoundedCornerShape(20.dp),
+                width = 1.5.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(12.dp),
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 13.dp, vertical = 7.dp),
+            .padding(horizontal = 14.dp, vertical = 10.dp),
     ) {
         Row(
             verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Box(
                 modifier = Modifier
-                    .size(7.dp)
-                    .background(chipColor, CircleShape),
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(brandColor),
             )
             Text(
                 text  = taskType.title,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color      = if (selected) chipColor else MaterialTheme.colorScheme.surfaceVariant,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                    color      = contentColor,
                 ),
             )
         }
     }
+}
+
+private fun Color.darken(factor: Float): Color {
+    return Color(
+        red = red * (1 - factor),
+        green = green * (1 - factor),
+        blue = blue * (1 - factor),
+        alpha = alpha
+    )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -128,19 +170,24 @@ fun TypeTaskChip(
 // ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun DayChip(
-    modifier: Modifier = Modifier,
     label: String,
     selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier,
+        modifier = modifier
+            .size(42.dp)
+            .clip(CircleShape)
+            .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text  = label,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontWeight = FontWeight.ExtraBold,
-                color      = if (selected)  MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color      = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
             ),
         )
     }
@@ -165,9 +212,8 @@ fun SettingsToggle(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text  = label,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
             )
-            Spacer(Modifier.height(2.dp))
             Text(
                 text  = hint,
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
@@ -175,24 +221,25 @@ fun SettingsToggle(
         }
         Spacer(Modifier.width(16.dp))
         val thumbX by animateDpAsState(
-            targetValue   = if (checked) 23.dp else 3.dp,
-            animationSpec = tween(200),
+            targetValue   = if (checked) 24.dp else 4.dp,
+            animationSpec = tween(250),
             label         = "toggle_thumb",
         )
         Box(
             modifier = Modifier
-                .size(width = 48.dp, height = 26.dp)
-                .clip(RoundedCornerShape(13.dp))
+                .size(width = 52.dp, height = 30.dp)
+                .clip(CircleShape)
                 .background(if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                 .clickable(onClick = onCheckedChange),
+            contentAlignment = Alignment.CenterStart
         ) {
             Box(
                 modifier = Modifier
-                    .offset(x = thumbX, y = 3.dp)
-                    .size(20.dp)
-                    .shadow(2.dp, CircleShape)
+                    .offset(x = thumbX)
+                    .size(22.dp)
                     .clip(CircleShape)
-                    .background(Color.White),
+                    .background(Color.White)
+                    .shadow(1.dp, CircleShape),
             )
         }
     }
@@ -209,9 +256,11 @@ fun AccentBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(3.dp)
+            .height(6.dp)
             .background(
-                Brush.horizontalGradient(listOf(categoryColor, MaterialTheme.colorScheme.primary)),
+                Brush.horizontalGradient(
+                    listOf(categoryColor, MaterialTheme.colorScheme.primary)
+                ),
             ),
     )
 }
@@ -226,19 +275,28 @@ fun ModeTab(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        label = "tabBackground"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "tabContent"
+    )
+
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
             .clickable(onClick = onClick)
-            .padding(vertical = 10.dp),
+            .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text  = label,
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color      = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                color      = contentColor,
             ),
         )
     }
@@ -255,32 +313,36 @@ fun TimeSlotChip(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
-            .padding(start = 10.dp, end = 4.dp, top = 5.dp, bottom = 5.dp),
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp))
+            .padding(start = 12.dp, end = 6.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment     = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text("🕐", fontSize = 11.sp)
+        Icon(
+            imageVector = Icons.Rounded.Schedule,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Text(
             text  = displayTime,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
         )
-        Spacer(Modifier.width(2.dp))
         Box(
             modifier = Modifier
-                .size(18.dp)
+                .size(24.dp)
                 .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
                 .clickable(onClick = onRemove),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text  = "×",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color      = MaterialTheme.colorScheme.error,
-                ),
+            Icon(
+                imageVector = Icons.Rounded.Close,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.error
             )
         }
     }
@@ -294,7 +356,7 @@ fun PickerButton(
     text: String,
     isPlaceholder: Boolean,
     hasError: Boolean,
-    leadingEmoji: String,
+    leadingIcon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -302,36 +364,30 @@ fun PickerButton(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             .border(
                 width = 1.5.dp,
                 color = if (hasError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
                 shape = RoundedCornerShape(12.dp),
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 13.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment     = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(leadingEmoji, fontSize = 15.sp)
+        Icon(
+            imageVector = leadingIcon,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = if (isPlaceholder) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
+        )
         Text(
             text  = text,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = if (isPlaceholder) FontWeight.Normal else FontWeight.SemiBold,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = if (isPlaceholder) FontWeight.Medium else FontWeight.Bold,
                 color      = if (isPlaceholder) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
             ),
             maxLines = 1,
         )
     }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Extension: color de marca por TypeTask
-// ─────────────────────────────────────────────────────────────────────────────
-fun TypeTask.brandColor(): Color = when (this) {
-    TypeTask.PERSONAL -> Color.Blue
-    TypeTask.STUDY    -> Color.Yellow
-    TypeTask.WORK     -> Color.Red
-    TypeTask.HEALTH   -> Color.Green
-    TypeTask.OTHER    -> Color.Magenta
 }
