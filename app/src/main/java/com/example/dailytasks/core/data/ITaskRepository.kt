@@ -2,6 +2,7 @@ package com.example.dailytasks.core.data
 
 import com.example.dailytasks.core.domain.DailyTaskModel
 import com.example.dailytasks.core.domain.TaskModel
+import com.example.dailytasks.core.domain.TaskStatus
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -35,5 +36,5 @@ interface ITaskRepository {
     /**
      * Actualiza el estado de completado de un ticket específico.
      */
-    suspend fun updateTicketCompletion(ticketId: String, isCompleted: Boolean)
+    suspend fun updateTicketCompletion(ticketId: String, status: TaskStatus)
 }

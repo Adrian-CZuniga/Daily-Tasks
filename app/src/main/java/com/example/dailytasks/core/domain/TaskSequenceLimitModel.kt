@@ -27,7 +27,7 @@ data class TaskSequenceLimitModel(
                     TicketModel(
                         date = date,
                         time = time,
-                        isCompleted = false,
+                        status = TaskStatus.PENDING,
                         ticketId = TicketModel.createId(id, date, time),
                         taskId = id
                     )

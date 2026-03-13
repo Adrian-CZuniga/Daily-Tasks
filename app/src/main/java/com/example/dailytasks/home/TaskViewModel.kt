@@ -8,6 +8,7 @@ import com.example.dailytasks.core.domain.Status
 import com.example.dailytasks.core.domain.TaskModel
 import com.example.dailytasks.core.domain.TaskSequenceLimitModel
 import com.example.dailytasks.core.domain.TaskSingleModel
+import com.example.dailytasks.core.domain.TaskStatus
 import com.example.dailytasks.core.domain.TypeTask
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,7 +31,7 @@ class TaskViewModel @Inject constructor(
     val selectedDay = _selectedDay.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    var dayTickets : StateFlow<List<DailyTaskModel>> = selectedDay
+    var dayTickets : StateFlow<List<DailyTaskModel>> = _selectedDay
         .flatMapLatest {
             taskRepository.getDailyTasks(it)
         }.stateIn(
@@ -38,8 +39,6 @@ class TaskViewModel @Inject constructor(
             started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-
-
 
     fun getTaskSingleModel() : TaskSingleModel {
         return TaskSingleModel(
@@ -75,11 +74,10 @@ class TaskViewModel @Inject constructor(
     fun changeDay(newDate: LocalDate) {
         _selectedDay.value = newDate
     }
-    fun saveTask(
-        taskModel: TaskModel
-    ){
+
+    fun updateCompletionTask(ticketId : String, status : TaskStatus) {
         viewModelScope.launch {
-            taskRepository.saveTask(taskModel)
+            taskRepository.updateTicketCompletion(ticketId, status)
         }
     }
 }

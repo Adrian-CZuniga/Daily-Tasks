@@ -9,7 +9,7 @@ data class DailyTaskModel(
 
     override val date: LocalDate,
     override val time: LocalTime,
-    override val isCompleted: Boolean,
+    override val status: TaskStatus,
     override val ticketId : String,
 
     override val id: String

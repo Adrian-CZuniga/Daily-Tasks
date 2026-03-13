@@ -4,6 +4,10 @@
     
     <!-- Main Screen -->
     <string name="add_task_description">Add Task</string>
+    <string name="my_tasks_title">My Tasks</string>
+    <string name="calendario_description">Calendar</string>
+    <string name="empty_tasks_title">All caught up!</string>
+    <string name="empty_tasks_subtitle">No tasks scheduled for this day. Relax or tap + to add a new one.</string>
     
     <!-- Add Task Screen -->
     <string name="new_task_header">New Task</string>

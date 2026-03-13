@@ -4,10 +4,19 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.LocalTime
 
+@Serializable
+enum class TaskStatus {
+    PENDING,
+    IN_PROGRESS,
+    COMPLETED,
+    CANCELLED,
+    OVERDUE
+}
+
 interface Ticket {
     val date : LocalDate
     val time : LocalTime
-    val isCompleted : Boolean
+    val status : TaskStatus
     val ticketId : String
 
     companion object {
@@ -21,7 +30,7 @@ class TicketModel(
     override val date : LocalDate,
     val taskId : String,
     override val time : LocalTime,
-    override val isCompleted : Boolean = false,
+    override val status : TaskStatus = TaskStatus.PENDING,
     override val ticketId : String,
 ) : Ticket {
     companion object {
@@ -36,7 +45,7 @@ data class DayTicketDTO(
     val date : @Serializable(with = LocalDateSerializer::class) LocalDate,
     val taskId : String,
     val time : @Serializable(with = LocalTimeSerializer::class) LocalTime,
-    val isCompleted : Boolean = false,
+    val isCompleted : TaskStatus = TaskStatus.PENDING,
     val id : String,
 )
 
@@ -44,7 +53,7 @@ fun TicketModel.toDto() = DayTicketDTO(
     date = date,
     taskId = taskId,
     time = time,
-    isCompleted = isCompleted,
+    isCompleted = status,
     id = ticketId
 )
 
@@ -52,7 +61,7 @@ fun DayTicketDTO.toDomain() = TicketModel(
     date = date,
     taskId = taskId,
     time = time,
-    isCompleted = isCompleted,
+    status = isCompleted,
     ticketId = id
 )
 

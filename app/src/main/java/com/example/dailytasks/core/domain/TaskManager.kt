@@ -1,6 +1,7 @@
 package com.example.dailytasks.core.domain
 
 import android.content.Context
+import com.example.dailytasks.core.utils.writeAtomic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -16,15 +17,11 @@ class TaskManager(private val context: Context) {
     private var taskCache: MutableMap<String, TaskModel>? = null
 
     fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>> = flow {
-
         val tickets = withContext(Dispatchers.IO) { readTickets(day) }
 
         val taskMap = getTaskCache()
-
         val tasks = tickets.mapNotNull { ticket ->
-
             val task = taskMap[ticket.taskId] ?: return@mapNotNull null
-
             buildDailyTask(ticket, task)
         }
 
@@ -35,14 +32,13 @@ class TaskManager(private val context: Context) {
         ticket: TicketModel,
         task: TaskModel
     ): DailyTaskModel {
-
         return DailyTaskModel(
             name = task.name,
             type = task.type,
 
             date = ticket.date,
             time = ticket.time,
-            isCompleted = ticket.isCompleted,
+            status = ticket.status,
             ticketId = ticket.ticketId,
 
             id = task.id
@@ -57,12 +53,10 @@ class TaskManager(private val context: Context) {
     }
 
     private fun loadAllTasks(): MutableMap<String, TaskModel> {
-
         val dir = getTasksDirectory()
         val files = dir.listFiles() ?: return mutableMapOf()
 
         return files.mapNotNull { file ->
-
             runCatching {
 
                 val jsonString = file.readText()
@@ -81,7 +75,6 @@ class TaskManager(private val context: Context) {
     }
 
     fun saveTask(task: TaskModel) {
-
         val jsonString = when (task) {
             is TaskSequenceLimitModel -> json.encodeToString(task.toDto())
             is TaskSingleModel -> json.encodeToString(task.toDto())
@@ -97,11 +90,8 @@ class TaskManager(private val context: Context) {
     }
 
     private fun createTicketModel(task: TaskModel) {
-
         val dailyTickets = when (task) {
-
-            is TaskSingleModel ->
-                listOf(task.createDayTicketModel())
+            is TaskSingleModel -> listOf(task.createDayTicketModel())
 
             is TaskSequenceLimitModel -> {
                 val now = LocalDate.now()
@@ -119,7 +109,6 @@ class TaskManager(private val context: Context) {
     }
 
     private fun saveTicketModel(ticketModel: TicketModel) {
-
         val ticketDTO = ticketModel.toDto()
         val json = json.encodeToString(ticketDTO)
 
@@ -127,13 +116,11 @@ class TaskManager(private val context: Context) {
     }
 
     private fun readTickets(day: LocalDate): List<TicketModel> {
-
         val dayDir = getTicketDirectoryByDay(day)
 
         val files = dayDir.listFiles() ?: return emptyList()
 
         return files.mapNotNull { file ->
-
             runCatching {
 
                 val jsonString = file.readText()
@@ -147,7 +134,6 @@ class TaskManager(private val context: Context) {
     }
 
     private fun getTicketDirectoryByDay(byDay: LocalDate): File {
-
         val dir = File(context.filesDir, "tickets")
 
         if (!dir.exists()) {
@@ -164,7 +150,6 @@ class TaskManager(private val context: Context) {
     }
 
     private fun writeTicketFile(id: String, json: String, dayTask: LocalDate) {
-
         val dayDir = getTicketDirectoryByDay(dayTask)
 
         val file = File(dayDir, "$id.json")
@@ -173,7 +158,6 @@ class TaskManager(private val context: Context) {
     }
 
     private fun getTasksDirectory(): File {
-
         val dir = File(context.filesDir, "tasks_configurations")
 
         if (!dir.exists()) {
@@ -184,12 +168,11 @@ class TaskManager(private val context: Context) {
     }
 
     private fun writeTaskFile(id: String, json: String) {
-
         val tasksDir = getTasksDirectory()
 
         val file = File(tasksDir, "$id.json")
 
-        file.writeText(json)
+        file.writeAtomic(json)
     }
 
     companion object JsonManager {
