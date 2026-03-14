@@ -1,10 +1,14 @@
 package com.example.dailytasks.core.domain
 
 import android.content.Context
+import com.example.dailytasks.core.utils.observeChanges
 import com.example.dailytasks.core.utils.writeAtomic
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -16,18 +20,32 @@ class TaskManager(private val context: Context) {
 
     private var taskCache: MutableMap<String, TaskModel>? = null
 
-    fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>> = flow {
-        val tickets = withContext(Dispatchers.IO) { readTickets(day) }
 
-        val taskMap = getTaskCache()
-        val tasks = tickets.mapNotNull { ticket ->
-            val task = taskMap[ticket.taskId] ?: return@mapNotNull null
-            buildDailyTask(ticket, task)
-        }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>> {
+        val dayDir = getTicketDirectoryByDay(day)
 
-        emit(tasks)
+        return dayDir.observeChanges().map {
+            val tickets = readTicketsFromDir(dayDir)
+            val taskMap = getTaskCache()
+
+            tickets.mapNotNull { ticket ->
+                val task = taskMap[ticket.taskId] ?: return@mapNotNull null
+                buildDailyTask(ticket, task)
+            }
+        }.flowOn(Dispatchers.IO)
     }
 
+    private fun readTicketsFromDir(dayDir: File): List<TicketModel> {
+        val files = dayDir.listFiles { file -> file.extension == "json" } ?: return emptyList()
+
+        return files.mapNotNull { file ->
+            runCatching {
+                val jsonString = file.readText()
+                json.decodeFromString<DayTicketDTO>(jsonString).toDomain()
+            }.getOrNull()
+        }
+    }
     private fun buildDailyTask(
         ticket: TicketModel,
         task: TaskModel
@@ -41,9 +59,11 @@ class TaskManager(private val context: Context) {
             status = ticket.status,
             ticketId = ticket.ticketId,
 
-            id = task.id
+            taskId = ticket.taskId
         )
     }
+
+
 
     private fun getTaskCache(): MutableMap<String, TaskModel> {
         if (taskCache == null) {
@@ -58,7 +78,6 @@ class TaskManager(private val context: Context) {
 
         return files.mapNotNull { file ->
             runCatching {
-
                 val jsonString = file.readText()
 
                 val task = if (jsonString.contains("schedule")) {
@@ -66,14 +85,10 @@ class TaskManager(private val context: Context) {
                 } else {
                     json.decodeFromString<TaskSingleDto>(jsonString).toDomain()
                 }
-
                 task.id to task
-
             }.getOrNull()
-
         }.toMap().toMutableMap()
     }
-
     fun saveTask(task: TaskModel) {
         val jsonString = when (task) {
             is TaskSequenceLimitModel -> json.encodeToString(task.toDto())
@@ -83,7 +98,6 @@ class TaskManager(private val context: Context) {
 
         writeTaskFile(task.id, jsonString)
 
-        // actualizar cache
         getTaskCache()[task.id] = task
 
         createTicketModel(task)
@@ -115,23 +129,7 @@ class TaskManager(private val context: Context) {
         writeTicketFile(ticketModel.ticketId, json, ticketModel.date)
     }
 
-    private fun readTickets(day: LocalDate): List<TicketModel> {
-        val dayDir = getTicketDirectoryByDay(day)
 
-        val files = dayDir.listFiles() ?: return emptyList()
-
-        return files.mapNotNull { file ->
-            runCatching {
-
-                val jsonString = file.readText()
-
-                val dto = json.decodeFromString<DayTicketDTO>(jsonString)
-
-                dto.toDomain()
-
-            }.getOrNull()
-        }
-    }
 
     private fun getTicketDirectoryByDay(byDay: LocalDate): File {
         val dir = File(context.filesDir, "tickets")
@@ -154,7 +152,7 @@ class TaskManager(private val context: Context) {
 
         val file = File(dayDir, "$id.json")
 
-        file.writeText(json)
+        file.writeAtomic(json)
     }
 
     private fun getTasksDirectory(): File {
@@ -173,6 +171,16 @@ class TaskManager(private val context: Context) {
         val file = File(tasksDir, "$id.json")
 
         file.writeAtomic(json)
+    }
+
+    fun updateTicket(newTicket : TicketModel) {
+        val task = getTicketDirectoryByDay(newTicket.date).listFiles()?.find { it.nameWithoutExtension == newTicket.ticketId }
+        if (task == null) return
+
+        val ticketDTO = newTicket.toDto()
+        val json = json.encodeToString(ticketDTO)
+
+        task.writeAtomic(json)
     }
 
     companion object JsonManager {

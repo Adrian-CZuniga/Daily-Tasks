@@ -10,7 +10,7 @@ data class TaskSingleModel(
     val time : LocalTime,
     override val type: TypeTask = TypeTask.PERSONAL,
     override val id : String,
-) : TaskModel() {
+) : TaskModel(id) {
     fun createDayTicketModel(): TicketModel {
         return TicketModel(
             date = date,

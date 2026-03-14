@@ -12,7 +12,7 @@ data class TaskSequenceLimitModel(
     val limitDate : LocalDate? = null, // null == no limit == infinite
     override val type: TypeTask = TypeTask.PERSONAL,
     override val id : String,
-) : TaskModel() {
+) : TaskModel(id) {
     fun createDayTicketModels(fromDate : LocalDate, toDate : LocalDate): List<TicketModel> {
         if (fromDate > limitDate) return listOf()
         if (toDate > limitDate && limitDate != null) return createDayTicketModels(fromDate, limitDate)

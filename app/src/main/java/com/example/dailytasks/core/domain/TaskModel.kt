@@ -2,10 +2,11 @@ package com.example.dailytasks.core.domain
 
 import java.util.UUID
 
-abstract class TaskModel() {
+abstract class TaskModel(
+    open val id : String
+) {
     abstract val name : String
     abstract val type : TypeTask
-    abstract val id : String
 
     companion object{
         fun createId(name : String, type : TypeTask) : String {

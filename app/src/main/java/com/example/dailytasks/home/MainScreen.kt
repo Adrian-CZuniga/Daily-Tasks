@@ -79,9 +79,10 @@ fun MainScreen(
                 dateFilter = today,
                 taskList = dailyTaskModels,
                 onToggleComplete = { ticketId ->
-                    val status = dailyTaskModels.find { it.ticketId == ticketId }?.status
-                    val newStatus = if (status == TaskStatus.PENDING) TaskStatus.COMPLETED else TaskStatus.PENDING
-                    viewModel.updateCompletionTask(ticketId, newStatus)
+                    val ticket = dailyTaskModels.find { it.ticketId == ticketId }
+                    val newStatus = if (ticket?.status == TaskStatus.PENDING) TaskStatus.COMPLETED else TaskStatus.PENDING
+                    val newTicket = ticket?.copy(status = newStatus) ?: return@TicketListComposable
+                    viewModel.updateCompletionTask(newTicket)
                 }
 
             )

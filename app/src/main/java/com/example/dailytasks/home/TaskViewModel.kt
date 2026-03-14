@@ -9,7 +9,9 @@ import com.example.dailytasks.core.domain.TaskModel
 import com.example.dailytasks.core.domain.TaskSequenceLimitModel
 import com.example.dailytasks.core.domain.TaskSingleModel
 import com.example.dailytasks.core.domain.TaskStatus
+import com.example.dailytasks.core.domain.Ticket
 import com.example.dailytasks.core.domain.TypeTask
+import com.example.dailytasks.core.domain.toTicketModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -75,9 +77,10 @@ class TaskViewModel @Inject constructor(
         _selectedDay.value = newDate
     }
 
-    fun updateCompletionTask(ticketId : String, status : TaskStatus) {
+    fun updateCompletionTask(updatedDailyTask: DailyTaskModel) {
         viewModelScope.launch {
-            taskRepository.updateTicketCompletion(ticketId, status)
+            val ticket = updatedDailyTask.toTicketModel()
+            taskRepository.updateTicket(ticket)
         }
     }
 }

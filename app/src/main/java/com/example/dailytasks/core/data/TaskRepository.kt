@@ -4,6 +4,9 @@ import com.example.dailytasks.core.domain.DailyTaskModel
 import com.example.dailytasks.core.domain.TaskManager
 import com.example.dailytasks.core.domain.TaskModel
 import com.example.dailytasks.core.domain.TaskStatus
+import com.example.dailytasks.core.domain.Ticket
+import com.example.dailytasks.core.domain.TicketModel
+import com.example.dailytasks.core.domain.toTicketModel
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import javax.inject.Inject
@@ -31,7 +34,7 @@ class TaskRepository @Inject constructor(private val taskManager: TaskManager) :
         return emptyList()
     }
 
-    override suspend fun updateTicketCompletion(ticketId: String, status: TaskStatus) {
-        // Implementación pendiente
+    override suspend fun updateTicket(newTicket: TicketModel) {
+        taskManager.updateTicket(newTicket)
     }
 }
