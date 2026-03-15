@@ -47,9 +47,6 @@ import androidx.compose.ui.unit.sp
 import com.example.dailytasks.core.domain.TypeTask
 import com.example.dailytasks.core.domain.brandColor
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  InputField  –  label + content slot + animated error message
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun InputField(
     label: String,
@@ -95,9 +92,6 @@ fun InputField(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  TypeTaskChip
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun TypeTaskChip(
     taskType: TypeTask,
@@ -165,9 +159,6 @@ private fun Color.darken(factor: Float): Color {
     )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  DayChip  –  selector circular por día de la semana
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun DayChip(
     label: String,
@@ -193,9 +184,6 @@ fun DayChip(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  SettingsToggle  –  switch animado con label y hint
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun SettingsToggle(
     label: String,
@@ -205,18 +193,19 @@ fun SettingsToggle(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier              = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment     = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text  = label,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             )
             Text(
                 text  = hint,
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                maxLines = 1,
             )
         }
         Spacer(Modifier.width(16.dp))
@@ -245,29 +234,6 @@ fun SettingsToggle(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  AccentBar  –  barra de gradiente superior de la card
-// ─────────────────────────────────────────────────────────────────────────────
-@Composable
-fun AccentBar(
-    categoryColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(6.dp)
-            .background(
-                Brush.horizontalGradient(
-                    listOf(categoryColor, MaterialTheme.colorScheme.primary)
-                ),
-            ),
-    )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  ModeTab  –  pestaña del segmented control One-time / Recurring
-// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun ModeTab(
     label: String,

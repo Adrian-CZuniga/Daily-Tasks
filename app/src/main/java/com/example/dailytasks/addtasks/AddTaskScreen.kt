@@ -9,10 +9,13 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,8 +45,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.dailytasks.R
 import com.example.dailytasks.core.domain.TypeTask
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import com.example.dailytasks.core.domain.brandColor
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -140,7 +141,7 @@ fun AddTaskScreen(
                 }
             }
 
-            // --- Selector de Modo (Sin botones gigantes) ---
+            // --- Selector de Modo ---
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = stringResource(R.string.schedule_type_label),
@@ -197,9 +198,9 @@ fun AddTaskScreen(
                         daysError = uiState.errors["days"],
                         timesError = uiState.errors["times"],
                         limitDateError = uiState.errors["limitDate"],
-                        onToggleDay = { viewModel.onToggleDay(it) },
-                        onAddTime = { day, time -> viewModel.onAddTime(day, time) },
-                        onRemoveTime = { day, time -> viewModel.onRemoveTime(day, time) },
+                        onToggleDayForTime = { day, time -> viewModel.onToggleDayForTime(day, time) },
+                        onAddTimeBlock = { time, days -> viewModel.onAddTime(time, days ) },
+                        onRemoveTimeBlock = { time -> viewModel.onRemoveTimeBlock(time) },
                         onToggleLimit = { viewModel.onToggleLimit() },
                         onLimitDateChange = { viewModel.onLimitDateChange(it) }
                     )
@@ -207,14 +208,12 @@ fun AddTaskScreen(
             }
         }
 
-        // --- Botones de Acción (Fijos al fondo, sin tarjeta) ---
+        // --- Botones de Acción ---
         ActionButtons(
             isSaving = uiState.isSaving,
-            accentColor = accentColor,
             onDiscard = onNavigateToHomeScreen,
             onSave = { viewModel.saveTask() },
-            modifier = Modifier
-                .padding(20.dp)
+            modifier = Modifier.padding(20.dp)
         )
     }
 }

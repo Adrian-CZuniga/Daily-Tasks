@@ -26,10 +26,20 @@
     <string name="set_end_date_hint">Leave off for infinite recurrence</string>
     <string name="until_label">Until</string>
     <string name="select_end_date">Select end date</string>
-    <string name="add_time_button">+ Add time</string>
+    <string name="add_time_button">Add time</string>
     <string name="cancel_button">Cancel</string>
     <string name="add_button">Add</string>
     <string name="ok_button">OK</string>
+    <string name="select_active_days">Select active days</string>
+    
+    <!-- Day Initials (English) -->
+    <string name="day_monday">M</string>
+    <string name="day_tuesday">Tu</string>
+    <string name="day_wednesday">W</string>
+    <string name="day_thursday">Th</string>
+    <string name="day_friday">F</string>
+    <string name="day_saturday">Sa</string>
+    <string name="day_sunday">Su</string>
     
     <!-- Single Section -->
     <string name="date_label">Date</string>

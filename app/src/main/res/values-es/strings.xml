@@ -4,6 +4,10 @@
     
     <!-- Main Screen -->
     <string name="add_task_description">Añadir Tarea</string>
+    <string name="my_tasks_title">Mis Tareas</string>
+    <string name="calendario_description">Calendario</string>
+    <string name="empty_tasks_title">¡Todo al día!</string>
+    <string name="empty_tasks_subtitle">No hay tareas programadas para este día. Relájate o toca + para añadir una nueva.</string>
     
     <!-- Add Task Screen -->
     <string name="new_task_header">Nueva Tarea</string>
@@ -12,8 +16,8 @@
     <string name="task_name_placeholder">¿Qué necesitas hacer?</string>
     <string name="category_label">Categoría</string>
     <string name="schedule_type_label">TIPO DE PROGRAMACIÓN</string>
-    <string name="mode_one_time">📌 Una vez</string>
-    <string name="mode_recurring">🔄 Recurrente</string>
+    <string name="mode_one_time">Una vez</string>
+    <string name="mode_recurring">Recurrente</string>
     
     <!-- Recurring Section -->
     <string name="active_days_label">Días Activos</string>
@@ -22,10 +26,20 @@
     <string name="set_end_date_hint">Desactivar para recurrencia infinita</string>
     <string name="until_label">Hasta</string>
     <string name="select_end_date">Selecciona fecha final</string>
-    <string name="add_time_button">+ Añadir hora</string>
+    <string name="add_time_button">Añadir hora</string>
     <string name="cancel_button">Cancelar</string>
     <string name="add_button">Añadir</string>
     <string name="ok_button">Aceptar</string>
+    <string name="select_active_days">Selecciona días activos</string>
+    
+    <!-- Day Initials (Spanish) -->
+    <string name="day_monday">L</string>
+    <string name="day_tuesday">M</string>
+    <string name="day_wednesday">X</string>
+    <string name="day_thursday">J</string>
+    <string name="day_friday">V</string>
+    <string name="day_saturday">S</string>
+    <string name="day_sunday">D</string>
     
     <!-- Single Section -->
     <string name="date_label">Fecha</string>
@@ -37,7 +51,7 @@
     
     <!-- Action Buttons -->
     <string name="discard_button">Descartar</string>
-    <string name="save_task_button">Guardar Tarea →</string>
+    <string name="save_task_button">Guardar Tarea</string>
     
     <!-- Errors -->
     <string name="error_name_empty">El nombre no puede estar vacío</string>

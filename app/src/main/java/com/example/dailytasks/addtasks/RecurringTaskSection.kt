@@ -2,28 +2,34 @@ package com.example.dailytasks.addtasks
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.DateRange
+import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -36,8 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,8 +53,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,137 +63,149 @@ fun RecurringTaskSection(
     daysError: String?,
     timesError: String?,
     limitDateError: String?,
-    onToggleDay: (DayOfWeek) -> Unit,
-    onAddTime: (DayOfWeek, LocalTime) -> Unit,
-    onRemoveTime: (DayOfWeek, LocalTime) -> Unit,
+    onToggleDayForTime: (DayOfWeek, LocalTime) -> Unit,
+    onAddTimeBlock: (LocalTime, List<DayOfWeek>) -> Unit,
+    onRemoveTimeBlock: (LocalTime) -> Unit,
     onToggleLimit: () -> Unit,
     onLimitDateChange: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var timePickerTargetDay by remember { mutableStateOf<DayOfWeek?>(null) }
-    var showLimitDatePicker  by remember { mutableStateOf(false) }
-
-    val orderedDays    = remember { DayOfWeek.entries }
+    var showTimePicker by remember { mutableStateOf(false) }
+    var showLimitDatePicker by remember { mutableStateOf(false) }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
     val limitFormatter = remember { DateTimeFormatter.ofPattern("dd MMM yyyy") }
 
+    val timeToDays = remember(schedule) {
+        val map = mutableMapOf<LocalTime, MutableList<DayOfWeek>>()
+        schedule.forEach { (day, times) ->
+            times.forEach { time ->
+                map.getOrPut(time) { mutableListOf() }.add(day)
+            }
+        }
+        map.toSortedMap()
+    }
+
     Column(
-        modifier  = modifier,
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        InputField(label = stringResource(R.string.active_days_label), error = daysError) {
-            Row(
-                modifier = Modifier.padding(top = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                orderedDays.forEach { day ->
-                    val selected = schedule.containsKey(day)
-                    DayChip(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                            .weight(1f)
-                            .border(
-                                width = 2.dp,
-                                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                                shape = CircleShape,
-                            )
-                            .clickable(onClick = {
-                                onToggleDay(day)
-                            }),
-                        label    = day.getDisplayName(TextStyle.SHORT, Locale.getDefault()).take(2),
-                        selected = schedule.containsKey(day),
-                        onClick  = { onToggleDay(day) },
+        InputField(
+            label = stringResource(R.string.time_slots_label),
+            error = timesError ?: daysError
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                timeToDays.forEach { (time, activeDays) ->
+                    TimeSlotBlock(
+                        time = time,
+                        formattedTime = time.format(timeFormatter),
+                        activeDays = activeDays,
+                        onToggleDay = { day -> onToggleDayForTime(day, time) },
+                        onRemoveBlock = { onRemoveTimeBlock(time) }
                     )
                 }
-            }
-        }
 
-        AnimatedVisibility(
-            visible = schedule.isNotEmpty(),
-            enter   = expandVertically() + fadeIn(),
-            exit    = shrinkVertically() + fadeOut(),
-        ) {
-            InputField(label = stringResource(R.string.time_slots_label), error = timesError) {
-                Column(
-                    modifier            = Modifier.padding(top = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                OutlinedButton(
+                    onClick = { showTimePicker = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    orderedDays
-                        .filter { schedule.containsKey(it) }
-                        .forEach { day ->
-                            DayTimeRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                day = day,
-                                times = schedule[day].orEmpty(),
-                                onPickTime = { timePickerTargetDay = day },
-                                onRemoveTime = { time -> onRemoveTime(day, time) },
-                            )
-                        }
+                    Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.add_time_button), fontWeight = FontWeight.Bold)
                 }
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        // --- Fecha Límite ---
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             SettingsToggle(
-                label           = stringResource(R.string.set_end_date_label),
-                hint            = stringResource(R.string.set_end_date_hint),
-                checked         = hasLimit,
-                onCheckedChange = { onToggleLimit() },
+                label = stringResource(R.string.set_end_date_label),
+                hint = stringResource(R.string.set_end_date_hint),
+                checked = hasLimit,
+                onCheckedChange = onToggleLimit
             )
-            AnimatedVisibility(
-                visible = hasLimit,
-                enter   = expandVertically() + fadeIn(),
-                exit    = shrinkVertically() + fadeOut(),
-            ) {
+
+            AnimatedVisibility(visible = hasLimit, enter = expandVertically(), exit = shrinkVertically()) {
                 InputField(label = stringResource(R.string.until_label), error = limitDateError) {
                     PickerButton(
-                        text          = limitDate?.format(limitFormatter) ?: stringResource(R.string.select_end_date),
+                        text = limitDate?.format(limitFormatter) ?: stringResource(R.string.select_end_date),
                         isPlaceholder = limitDate == null,
-                        hasError      = limitDateError != null,
-                        leadingIcon  = Icons.Rounded.DateRange,
-                        onClick       = { showLimitDatePicker = true },
+                        hasError = limitDateError != null,
+                        leadingIcon = Icons.Rounded.CalendarToday,
+                        onClick = { showLimitDatePicker = true }
                     )
                 }
             }
         }
     }
 
-    timePickerTargetDay?.let { targetDay ->
+    // --- DIÁLOGO DE NUEVO HORARIO + DÍAS ---
+    if (showTimePicker) {
+        var selectedDays by remember { mutableStateOf(setOf<DayOfWeek>()) }
         val pickerState = rememberTimePickerState(is24Hour = true)
-        Dialog(onDismissRequest = { timePickerTargetDay = null }) {
-            Column(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+
+        Dialog(onDismissRequest = { showTimePicker = false }) {
+            Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 6.dp
             ) {
-                Text(
-                    text  = "${stringResource(R.string.add_button)} · ${targetDay.getDisplayName(TextStyle.FULL, Locale.getDefault())}",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                TimePicker(state = pickerState)
-                Row(
-                    modifier              = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TextButton(onClick = { timePickerTargetDay = null }) { Text(stringResource(R.string.cancel_button)) }
-                    TextButton(onClick = {
-                        val time = LocalTime.of(pickerState.hour, pickerState.minute)
-                        onAddTime(targetDay, time)
-                        timePickerTargetDay = null
-                    }) { Text(stringResource(R.string.add_button)) }
+                    Text(stringResource(R.string.select_time), style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(20.dp))
+                    
+                    TimePicker(state = pickerState)
+                    
+                    Spacer(Modifier.height(24.dp))
+                    
+                    Text(
+                        text = stringResource(R.string.select_active_days),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        DayOfWeek.entries.forEach { day ->
+                            val isSelected = selectedDays.contains(day)
+                            DayChip(
+                                modifier = Modifier.weight(1f),
+                                label = stringResource(day.getStringRes()),
+                                selected = isSelected,
+                                onClick = {
+                                    selectedDays = if (isSelected) selectedDays - day else selectedDays + day
+                                }
+                            )
+                        }
+                    }
+                    
+                    Spacer(Modifier.height(24.dp))
+                    
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = { showTimePicker = false }) {
+                            Text(stringResource(R.string.cancel_button))
+                        }
+                        Button(
+                            onClick = {
+                                onAddTimeBlock(
+                                    LocalTime.of(pickerState.hour, pickerState.minute),
+                                    selectedDays.toList()
+                                )
+                                showTimePicker = false
+                            },
+                            enabled = selectedDays.isNotEmpty(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(stringResource(R.string.add_button))
+                        }
+                    }
                 }
             }
         }
@@ -199,92 +213,90 @@ fun RecurringTaskSection(
 
     if (showLimitDatePicker) {
         val pickerState = rememberDatePickerState(
-            initialSelectedDateMillis = limitDate
-                ?.atStartOfDay(ZoneId.systemDefault())
-                ?.toInstant()
-                ?.toEpochMilli()
-                ?: System.currentTimeMillis(),
+            initialSelectedDateMillis = limitDate?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
+                ?: System.currentTimeMillis()
         )
         DatePickerDialog(
             onDismissRequest = { showLimitDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
                     pickerState.selectedDateMillis?.let { millis ->
-                        val date = Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                        onLimitDateChange(date)
+                        onLimitDateChange(Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate())
                     }
                     showLimitDatePicker = false
                 }) { Text(stringResource(R.string.ok_button)) }
             },
             dismissButton = {
                 TextButton(onClick = { showLimitDatePicker = false }) { Text(stringResource(R.string.cancel_button)) }
-            },
+            }
         ) { DatePicker(state = pickerState) }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DayTimeRow(
-    modifier: Modifier = Modifier,
-    day: DayOfWeek,
-    times: List<LocalTime>,
-    onPickTime: () -> Unit,
-    onRemoveTime: (LocalTime) -> Unit,
+fun TimeSlotBlock(
+    time: LocalTime,
+    formattedTime: String,
+    activeDays: List<DayOfWeek>,
+    onToggleDay: (DayOfWeek) -> Unit,
+    onRemoveBlock: () -> Unit
 ) {
-    val formatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
-
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment     = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text  = day.getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                ),
-            )
-            Text(
-                text  = "${times.size} slot${if (times.size != 1) "s" else ""}",
-                style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
-            )
-        }
-
-        if (times.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement   = Arrangement.spacedBy(6.dp),
-            ) {
-                times.forEach { time ->
-                    TimeSlotChip(
-                        displayTime = time.format(formatter),
-                        onRemove    = { onRemoveTime(time) },
-                    )
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Rounded.AccessTime,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = formattedTime,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            IconButton(onClick = onRemoveBlock) {
+                Icon(Icons.Rounded.DeleteOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error)
             }
         }
 
-        TextButton(
-            onClick  = onPickTime,
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = .12f)),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text  = stringResource(R.string.add_time_button),
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color      = MaterialTheme.colorScheme.primary,
-                ),
-            )
+            DayOfWeek.entries.forEach { day ->
+                DayChip(
+                    label = stringResource(day.getStringRes()),
+                    selected = activeDays.contains(day),
+                    onClick = { onToggleDay(day) }
+                )
+            }
         }
+    }
+}
+
+fun DayOfWeek.getStringRes(): Int {
+    return when (this) {
+        DayOfWeek.MONDAY -> R.string.day_monday
+        DayOfWeek.TUESDAY -> R.string.day_tuesday
+        DayOfWeek.WEDNESDAY -> R.string.day_wednesday
+        DayOfWeek.THURSDAY -> R.string.day_thursday
+        DayOfWeek.FRIDAY -> R.string.day_friday
+        DayOfWeek.SATURDAY -> R.string.day_saturday
+        DayOfWeek.SUNDAY -> R.string.day_sunday
     }
 }

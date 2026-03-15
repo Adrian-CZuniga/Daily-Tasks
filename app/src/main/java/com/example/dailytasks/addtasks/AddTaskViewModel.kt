@@ -65,40 +65,56 @@ class AddTaskViewModel @Inject constructor(
         _uiState.update { it.copy(singleTime = time, errors = it.errors - "singleTime") }
     }
 
-    fun onToggleDay(day: DayOfWeek) {
-        _uiState.update { state ->
-            val newSchedule = state.schedule.toMutableMap()
-            if (newSchedule.containsKey(day)) {
-                newSchedule.remove(day)
-            } else {
-                newSchedule[day] = emptyList()
-            }
-            state.copy(schedule = newSchedule, errors = state.errors - "days")
-        }
-    }
+    // --- Nueva lógica para RecurringTaskSection (Time -> Days) ---
 
-    fun onAddTime(day: DayOfWeek, time: LocalTime) {
+    fun onToggleDayForTime(day: DayOfWeek, time: LocalTime) {
         _uiState.update { state ->
             val newSchedule = state.schedule.toMutableMap()
             val dayTimes = newSchedule[day]?.toMutableList() ?: mutableListOf()
-            if (!dayTimes.contains(time)) {
+            
+            if (dayTimes.contains(time)) {
+                dayTimes.remove(time)
+            } else {
                 dayTimes.add(time)
                 dayTimes.sort()
             }
-            newSchedule[day] = dayTimes
-            state.copy(schedule = newSchedule, errors = state.errors - "times")
+            
+            if (dayTimes.isEmpty()) {
+                newSchedule.remove(day)
+            } else {
+                newSchedule[day] = dayTimes
+            }
+            
+            state.copy(schedule = newSchedule, errors = state.errors - "days" - "times")
         }
     }
 
-    fun onRemoveTime(day: DayOfWeek, time: LocalTime) {
+    fun onAddTime(time: LocalTime, days: List<DayOfWeek>) {
         _uiState.update { state ->
             val newSchedule = state.schedule.toMutableMap()
-            val dayTimes = newSchedule[day]?.toMutableList() ?: return@update state
-            dayTimes.remove(time)
-            newSchedule[day] = dayTimes
+            days.forEach { day ->
+                val dayTimes = newSchedule[day]?.toMutableList() ?: mutableListOf()
+                if (!dayTimes.contains(time)) {
+                    dayTimes.add(time)
+                    dayTimes.sort()
+                }
+                newSchedule[day] = dayTimes
+            }
+            state.copy(schedule = newSchedule, errors = state.errors - "times" - "days")
+        }
+    }
+
+    fun onRemoveTimeBlock(time: LocalTime) {
+        _uiState.update { state ->
+            val newSchedule = state.schedule.mapValues { (_, times) ->
+                times.filter { it != time }
+            }.filterValues { it.isNotEmpty() }
+            
             state.copy(schedule = newSchedule)
         }
     }
+
+    // -------------------------------------------------------------
 
     fun onToggleLimit() {
         _uiState.update { it.copy(hasLimit = !it.hasLimit) }
@@ -125,7 +141,7 @@ class AddTaskViewModel @Inject constructor(
                         date = state.singleDate!!,
                         time = state.singleTime!!,
                         type = state.taskType,
-                        id = UUID.randomUUID().toString()
+                        id = TaskModel.createId(state.name, state.taskType)
                     )
                 } else null
             }
@@ -140,7 +156,7 @@ class AddTaskViewModel @Inject constructor(
                         schedule = state.schedule,
                         limitDate = if (state.hasLimit) state.limitDate else null,
                         type = state.taskType,
-                        id = UUID.randomUUID().toString()
+                        id = TaskModel.createId(state.name, state.taskType)
                     )
                 } else null
             }
@@ -153,7 +169,7 @@ class AddTaskViewModel @Inject constructor(
 
         task?.let {
             viewModelScope.launch {
-                _uiState.update { it -> it.copy(isSaving = true) }
+                _uiState.update { it.copy(isSaving = true) }
                 repository.saveTask(it)
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
             }

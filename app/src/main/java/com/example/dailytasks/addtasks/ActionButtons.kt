@@ -27,13 +27,12 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ActionButtons(
     isSaving: Boolean,
-    accentColor: Color,
     onDiscard: () -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier              = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Box(
@@ -62,7 +61,9 @@ fun ActionButtons(
                 .weight(2.5f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(
-                    Brush.horizontalGradient(listOf(accentColor, MaterialTheme.colorScheme.primary)),
+                    Brush.horizontalGradient(
+                        colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
+                    ),
                 )
                 .clickable(enabled = !isSaving, onClick = onSave)
                 .padding(vertical = 16.dp),
