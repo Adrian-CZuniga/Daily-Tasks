@@ -47,7 +47,6 @@ import java.util.Locale
 fun TicketListItem(
     dailyTaskModel: DailyTaskModel,
     onToggleComplete: (String) -> Unit,
-    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val is24Hour = DateFormat.is24HourFormat(context)
@@ -78,7 +77,7 @@ fun TicketListItem(
     )
 
     Row(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
                 scaleX = scale
@@ -91,7 +90,6 @@ fun TicketListItem(
                 color = if (isCompleted) Color.Transparent else MaterialTheme.colorScheme.outlineVariant,
                 shape = RoundedCornerShape(16.dp)
             )
-            .clickable { onToggleComplete(dailyTaskModel.ticketId) }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -113,7 +111,8 @@ fun TicketListItem(
                     else 
                         MaterialTheme.colorScheme.outline,
                     shape = CircleShape
-                ),
+                )
+                .clickable { onToggleComplete(dailyTaskModel.ticketId) },
             contentAlignment = Alignment.Center
         ) {
             if (isCompleted) {

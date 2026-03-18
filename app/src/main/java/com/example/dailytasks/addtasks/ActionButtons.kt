@@ -62,7 +62,7 @@ fun ActionButtons(
                 .clip(RoundedCornerShape(16.dp))
                 .background(
                     Brush.horizontalGradient(
-                        colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
+                        colors = listOf(colorScheme.primary, colorScheme.primaryContainer)
                     ),
                 )
                 .clickable(enabled = !isSaving, onClick = onSave)

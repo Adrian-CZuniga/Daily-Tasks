@@ -14,10 +14,14 @@ import com.example.dailytasks.core.domain.TypeTask
 import com.example.dailytasks.core.domain.toTicketModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -28,7 +32,8 @@ import javax.inject.Inject
 class TaskViewModel @Inject constructor(
     private val taskRepository : ITaskRepository
 ) : ViewModel() {
-    var status : MutableStateFlow<Status> = MutableStateFlow(Status.UNDEFINED)
+    private val _status : MutableStateFlow<Status> = MutableStateFlow(Status.UNDEFINED)
+    var status : StateFlow<Status> = _status.asStateFlow()
     private val _selectedDay : MutableStateFlow<LocalDate> = MutableStateFlow(LocalDate.now())
     val selectedDay = _selectedDay.asStateFlow()
 
@@ -36,11 +41,21 @@ class TaskViewModel @Inject constructor(
     var dayTickets : StateFlow<List<DailyTaskModel>> = _selectedDay
         .flatMapLatest {
             taskRepository.getDailyTasks(it)
+                .onStart {
+                    _status.value = Status.LOADING
+                }
+                .onEach { tickets ->
+                    _status.value = Status.SUCCESS
+                }
+                .catch { e ->
+                    _status.value = Status.ERROR
+                }
         }.stateIn(
             scope = viewModelScope,
             started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
 
     fun getTaskSingleModel() : TaskSingleModel {
         return TaskSingleModel(

@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -57,6 +59,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecurringTaskSection(
+    modifier: Modifier = Modifier,
     schedule: Map<DayOfWeek, List<LocalTime>>,
     hasLimit: Boolean,
     limitDate: LocalDate?,
@@ -68,7 +71,6 @@ fun RecurringTaskSection(
     onRemoveTimeBlock: (LocalTime) -> Unit,
     onToggleLimit: () -> Unit,
     onLimitDateChange: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
     var showLimitDatePicker by remember { mutableStateOf(false) }
@@ -117,9 +119,9 @@ fun RecurringTaskSection(
             }
         }
 
-        // --- Fecha Límite ---
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             SettingsToggle(
+                modifier = Modifier.fillMaxWidth(),
                 label = stringResource(R.string.set_end_date_label),
                 hint = stringResource(R.string.set_end_date_hint),
                 checked = hasLimit,
@@ -129,11 +131,20 @@ fun RecurringTaskSection(
             AnimatedVisibility(visible = hasLimit, enter = expandVertically(), exit = shrinkVertically()) {
                 InputField(label = stringResource(R.string.until_label), error = limitDateError) {
                     PickerButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .border(
+                                width = 1.5.dp,
+                                color = if (limitDateError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
+                                shape = RoundedCornerShape(12.dp),
+                            )
+                            .clickable{ showLimitDatePicker = true }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
                         text = limitDate?.format(limitFormatter) ?: stringResource(R.string.select_end_date),
                         isPlaceholder = limitDate == null,
-                        hasError = limitDateError != null,
                         leadingIcon = Icons.Rounded.CalendarToday,
-                        onClick = { showLimitDatePicker = true }
                     )
                 }
             }

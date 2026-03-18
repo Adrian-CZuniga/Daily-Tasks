@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -49,8 +50,8 @@ import com.example.dailytasks.core.domain.brandColor
 
 @Composable
 fun InputField(
-    label: String,
     modifier: Modifier = Modifier,
+    label: String,
     error: String? = null,
     content: @Composable () -> Unit,
 ) {
@@ -94,10 +95,11 @@ fun InputField(
 
 @Composable
 fun TypeTaskChip(
-    taskType: TypeTask,
-    selected: Boolean,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    shape: Shape,
+    taskType: TypeTask,
+    onSelectType: (TypeTask) -> Unit,
+    selected: Boolean,
 ) {
     val brandColor = taskType.brandColor()
     
@@ -119,18 +121,17 @@ fun TypeTaskChip(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(backgroundColor)
+            .clickable{ onSelectType(taskType) }
+            .background(backgroundColor, shape)
             .border(
                 width = 1.5.dp,
                 color = borderColor,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+                shape = shape,
+            ),
     ) {
         Row(
-            verticalAlignment     = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Box(
@@ -143,7 +144,7 @@ fun TypeTaskChip(
                 text  = taskType.title,
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                    color      = contentColor,
+                    color = contentColor,
                 ),
             )
         }
@@ -178,7 +179,7 @@ fun DayChip(
             text  = label,
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color      = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
             ),
         )
     }
@@ -193,7 +194,7 @@ fun SettingsToggle(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment     = Alignment.CenterVertically,
     ) {
@@ -236,10 +237,10 @@ fun SettingsToggle(
 
 @Composable
 fun ModeTab(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    label: String,
+    shape : Shape,
+    selected: Boolean,
 ) {
     val backgroundColor by animateColorAsState(
         targetValue = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
@@ -252,10 +253,7 @@ fun ModeTab(
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
+            .background(backgroundColor, shape),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -321,23 +319,11 @@ fun TimeSlotChip(
 fun PickerButton(
     text: String,
     isPlaceholder: Boolean,
-    hasError: Boolean,
     leadingIcon: ImageVector,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            .border(
-                width = 1.5.dp,
-                color = if (hasError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = modifier,
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {

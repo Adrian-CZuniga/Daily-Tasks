@@ -9,6 +9,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +18,11 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -29,11 +33,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -67,36 +73,52 @@ fun AddTaskScreen(
         label = "accent",
     )
 
-    Column(
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
-            .navigationBarsPadding()
-    ) {
-        // --- Header Integrado ---
-        ScreenHeader(
-            onNavigateUp = onNavigateToHomeScreen,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
-        )
-
-        // Línea de acento sutil debajo del header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .background(accentColor.copy(alpha = 0.5f))
-        )
-
+            .navigationBarsPadding(),
+        topBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                ScreenHeader(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    onNavigateUp = onNavigateToHomeScreen,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(2.dp)
+                        .background(accentColor.copy(alpha = 0.5f))
+                )
+            }
+        },
+        bottomBar = {
+            ActionButtons(
+                isSaving = uiState.isSaving,
+                onDiscard = onNavigateToHomeScreen,
+                onSave = { viewModel.saveTask() },
+                modifier = Modifier.padding(20.dp)
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .weight(1f)
+                .padding(16.dp)
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(28.dp)
+            ,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- Nombre de la Tarea (Más limpio) ---
-            InputField(label = stringResource(R.string.task_name_label), error = uiState.errors["name"]) {
+            InputField(
+                label = stringResource(R.string.task_name_label), error = uiState.errors["name"]
+            ) {
                 OutlinedTextField(
                     value = uiState.name,
                     onValueChange = { viewModel.onNameChange(it) },
@@ -124,25 +146,29 @@ fun AddTaskScreen(
                 )
             }
 
-            // --- Categorías (Chips Minimalistas) ---
             InputField(label = stringResource(R.string.category_label)) {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     TypeTask.entries.forEach { type ->
                         TypeTaskChip(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp),
                             taskType = type,
+                            shape = RoundedCornerShape(12.dp),
+                            onSelectType = { viewModel.onTypeChange(type) },
                             selected = uiState.taskType == type,
-                            onClick = { viewModel.onTypeChange(type) },
                         )
                     }
                 }
             }
 
-            // --- Selector de Modo ---
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                modifier= Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp))
+            {
                 Text(
                     text = stringResource(R.string.schedule_type_label),
                     style = MaterialTheme.typography.labelSmall.copy(
@@ -154,27 +180,33 @@ fun AddTaskScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                        .padding(4.dp),
+                        .height(48.dp)
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     ModeTab(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(1f)
+                            .clickable { viewModel.onModeChange(TaskMode.SINGLE) },
                         label = stringResource(R.string.mode_one_time),
+                        shape = RoundedCornerShape(12.dp),
                         selected = uiState.taskMode == TaskMode.SINGLE,
-                        onClick = { viewModel.onModeChange(TaskMode.SINGLE) },
-                        modifier = Modifier.weight(1f),
                     )
                     ModeTab(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(1f)
+                            .clickable  { viewModel.onModeChange(TaskMode.RECURRING) },
                         label = stringResource(R.string.mode_recurring),
+                        shape = RoundedCornerShape(12.dp),
                         selected = uiState.taskMode == TaskMode.RECURRING,
-                        onClick = { viewModel.onModeChange(TaskMode.RECURRING) },
-                        modifier = Modifier.weight(1f),
                     )
                 }
             }
 
-            // --- Secciones Dinámicas ---
             AnimatedContent(
+                modifier = Modifier.fillMaxWidth(),
                 targetState = uiState.taskMode,
                 transitionSpec = {
                     (fadeIn(tween(200)) + slideInVertically { it / 10 })
@@ -184,6 +216,7 @@ fun AddTaskScreen(
             ) { mode ->
                 when (mode) {
                     TaskMode.SINGLE -> SingleTaskSection(
+                        modifier = Modifier.fillMaxWidth(),
                         selectedDate = uiState.singleDate,
                         selectedTime = uiState.singleTime,
                         dateError = uiState.errors["singleDate"],
@@ -192,6 +225,7 @@ fun AddTaskScreen(
                         onTimeChange = { viewModel.onSingleTimeChange(it) }
                     )
                     TaskMode.RECURRING -> RecurringTaskSection(
+                        modifier = Modifier.fillMaxWidth(),
                         schedule = uiState.schedule,
                         hasLimit = uiState.hasLimit,
                         limitDate = uiState.limitDate,
@@ -207,13 +241,5 @@ fun AddTaskScreen(
                 }
             }
         }
-
-        // --- Botones de Acción ---
-        ActionButtons(
-            isSaving = uiState.isSaving,
-            onDiscard = onNavigateToHomeScreen,
-            onSave = { viewModel.saveTask() },
-            modifier = Modifier.padding(20.dp)
-        )
     }
 }

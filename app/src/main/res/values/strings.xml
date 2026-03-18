@@ -60,4 +60,5 @@
     <string name="error_select_day">Select at least one day</string>
     <string name="error_add_time_slot">Add at least one time slot</string>
     <string name="error_select_limit_date">Select a limit date</string>
+    <string name="back_description" translatable="false">Back button</string>
 </resources>

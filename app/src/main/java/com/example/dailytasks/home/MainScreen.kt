@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
@@ -22,13 +24,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dailytasks.R
 import com.example.dailytasks.core.domain.TaskStatus
 import com.example.dailytasks.core.ui.TicketListComposable
+import com.example.dailytasks.core.ui.composables.DefaultError
+import com.example.dailytasks.core.ui.composables.DefaultLoading
 import com.example.dailytasks.core.ui.composables.HeaderSection
+import com.example.dailytasks.core.ui.composables.StatusWrapper
 
 @Composable
 fun MainScreen(
     onNavigateToAddTask : () -> Unit = {},
     viewModel : TaskViewModel = hiltViewModel()
 ){
+    val status by viewModel.status.collectAsState()
     val today by viewModel.selectedDay.collectAsState()
     val dailyTaskModels by viewModel.dayTickets.collectAsState()
 
@@ -72,20 +78,32 @@ fun MainScreen(
             .fillMaxSize()
             .padding(paddingValues)
         ) {
-            TicketListComposable(
+            StatusWrapper(
+                status = status,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                dateFilter = today,
-                taskList = dailyTaskModels,
-                onToggleComplete = { ticketId ->
-                    val ticket = dailyTaskModels.find { it.ticketId == ticketId }
-                    val newStatus = if (ticket?.status == TaskStatus.PENDING) TaskStatus.COMPLETED else TaskStatus.PENDING
-                    val newTicket = ticket?.copy(status = newStatus) ?: return@TicketListComposable
-                    viewModel.updateCompletionTask(newTicket)
+                    .fillMaxSize()
+                    .weight(1f),
+                loadingContent = {
+                    DefaultLoading()
+                },
+                errorContent = {
+                    DefaultError()
                 }
-
-            )
+            ) {
+                TicketListComposable(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    dateFilter = today,
+                    taskList = dailyTaskModels,
+                    onToggleComplete = { ticketId ->
+                        val ticket = dailyTaskModels.find { it.ticketId == ticketId }
+                        val newStatus = if (ticket?.status == TaskStatus.PENDING) TaskStatus.COMPLETED else TaskStatus.PENDING
+                        val newTicket = ticket?.copy(status = newStatus) ?: return@TicketListComposable
+                        viewModel.updateCompletionTask(newTicket)
+                    }
+                )
+            }
         }
     }
 }

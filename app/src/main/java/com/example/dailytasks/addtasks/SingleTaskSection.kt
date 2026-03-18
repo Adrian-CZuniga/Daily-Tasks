@@ -2,6 +2,7 @@ package com.example.dailytasks.addtasks
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,13 +45,13 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SingleTaskSection(
+    modifier: Modifier = Modifier,
     selectedDate: LocalDate?,
     selectedTime: LocalTime?,
     dateError: String?,
     timeError: String?,
     onDateChange: (LocalDate) -> Unit,
     onTimeChange: (LocalTime) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -59,11 +60,11 @@ fun SingleTaskSection(
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
     Column(
-        modifier            = modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         Row(
-            modifier              = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             InputField(
@@ -72,11 +73,20 @@ fun SingleTaskSection(
                 modifier = Modifier.weight(1f),
             ) {
                 PickerButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .border(
+                            width = 1.5.dp,
+                            color = if (dateError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
+                            shape = RoundedCornerShape(12.dp),
+                        )
+                        .clickable{ showDatePicker = true }
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     text          = selectedDate?.format(dateFormatter) ?: stringResource(R.string.select_date),
                     isPlaceholder = selectedDate == null,
-                    hasError      = dateError != null,
                     leadingIcon   = Icons.Rounded.Event,
-                    onClick       = { showDatePicker = true },
                 )
             }
             InputField(
@@ -85,11 +95,20 @@ fun SingleTaskSection(
                 modifier = Modifier.weight(1f),
             ) {
                 PickerButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .border(
+                            width = 1.5.dp,
+                            color = if (timeError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outlineVariant,
+                            shape = RoundedCornerShape(12.dp),
+                        )
+                        .clickable{ showTimePicker = true }
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     text          = selectedTime?.format(timeFormatter) ?: stringResource(R.string.select_time),
                     isPlaceholder = selectedTime == null,
-                    hasError      = timeError != null,
                     leadingIcon   = Icons.Rounded.AccessTime,
-                    onClick       = { showTimePicker = true },
                 )
             }
         }

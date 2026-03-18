@@ -14,9 +14,10 @@ data class TaskSequenceLimitModel(
     override val id : String,
 ) : TaskModel(id) {
     fun createDayTicketModels(fromDate : LocalDate, toDate : LocalDate): List<TicketModel> {
-        if (fromDate > limitDate) return listOf()
-        if (toDate > limitDate && limitDate != null) return createDayTicketModels(fromDate, limitDate)
-
+        if (limitDate != null) {
+            if (fromDate.isAfter(limitDate)) return listOf()
+            if (toDate > limitDate) return createDayTicketModels(fromDate, limitDate)
+        }
         val dayTickets = mutableListOf<TicketModel>()
 
         val rangeDays = fromDate.datesUntil(toDate)

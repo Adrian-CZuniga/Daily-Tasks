@@ -9,6 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,21 +33,25 @@ fun ScreenHeader(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier              = modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Box(
+        IconButton(
             modifier = Modifier
-                .size(40.dp)
                 .clip(CircleShape)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
-                .clickable(onClick = onNavigateUp),
-            contentAlignment = Alignment.Center,
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+            colors = IconButtonDefaults.iconButtonColors().copy(
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            ),
+            onClick = {
+                onNavigateUp()
+            }
         ) {
-            Text(
-                text  = "←",
-                style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.onSurface),
+            Icon(
+                modifier = Modifier.size(20.dp),
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.back_description),
             )
         }
         Column {

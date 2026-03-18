@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dailytasks.R
 import com.example.dailytasks.core.domain.DailyTaskModel
+import com.example.dailytasks.core.domain.Status
 import com.example.dailytasks.core.ui.composables.TicketListItem
 import java.time.LocalDate
 
@@ -51,7 +52,6 @@ fun TicketListComposable(
         ) {
             items(filterList) { dailyTaskModel ->
                 TicketListItem(
-                    modifier = Modifier.fillMaxWidth(),
                     dailyTaskModel = dailyTaskModel,
                     onToggleComplete = onToggleComplete
                 )
