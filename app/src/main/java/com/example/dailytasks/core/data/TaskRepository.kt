@@ -20,6 +20,10 @@ class TaskRepository @Inject constructor(private val taskManager: TaskManager) :
         taskManager.saveTask(task)
     }
 
+    override suspend fun updateTask(task: TaskModel) {
+        taskManager.updateTask(task)
+    }
+
     override suspend fun getTaskById(taskId: String): TaskModel? {
         return taskManager.getTaskById(taskId)
     }

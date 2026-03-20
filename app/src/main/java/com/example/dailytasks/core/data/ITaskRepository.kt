@@ -15,9 +15,14 @@ interface ITaskRepository {
     fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>>
 
     /**
-     * Guarda una nueva tarea o actualiza una existente.
+     * Guarda una nueva tarea.
      */
     suspend fun saveTask(task: TaskModel)
+
+    /**
+     * Actualiza una tarea previamente creada
+     */
+    suspend fun updateTask(task: TaskModel)
 
 
     /**

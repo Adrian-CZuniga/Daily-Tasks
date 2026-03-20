@@ -67,6 +67,7 @@ class AddTaskViewModel @Inject constructor(
                 _uiState.update { state ->
                     when (task) {
                         is TaskSingleModel -> state.copy(
+                            taskId = task.id,
                             name = task.name,
                             taskMode = TaskMode.SINGLE,
                             taskType = task.type,
@@ -75,6 +76,7 @@ class AddTaskViewModel @Inject constructor(
                             isLoading = false
                         )
                         is TaskSequenceLimitModel -> state.copy(
+                            taskId = task.id,
                             name = task.name,
                             taskMode = TaskMode.RECURRING,
                             taskType = task.type,
@@ -213,6 +215,11 @@ class AddTaskViewModel @Inject constructor(
         task?.let {
             viewModelScope.launch {
                 _uiState.update { it.copy(isSaving = true) }
+                repository.getTaskById(it.id)?.let { oldTask ->
+                    repository.updateTask(it)
+                    _uiState.update { it.copy(isSaving = false, isSaved = true) }
+                    return@launch
+                }
                 repository.saveTask(it)
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
             }

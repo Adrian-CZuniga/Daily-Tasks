@@ -17,9 +17,7 @@ import java.time.LocalDate
 import kotlin.collections.emptyList
 
 class TaskManager(private val context: Context) {
-
     private var taskCache: MutableMap<String, TaskModel>? = null
-
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>> {
@@ -113,6 +111,21 @@ class TaskManager(private val context: Context) {
                 else -> throw IllegalArgumentException("Invalid task type")
             }
 
+            writeTaskFile(task.id, jsonString)
+
+            getTaskCache()[task.id] = task
+
+            createTicketModel(task)
+        }
+    }
+
+    suspend fun updateTask(task: TaskModel) {
+        withContext(Dispatchers.IO) {
+            val jsonString = when (task) {
+                is TaskSequenceLimitModel -> json.encodeToString(task.toDto())
+                is TaskSingleModel -> json.encodeToString(task.toDto())
+                else -> throw IllegalArgumentException("Invalid task type")
+            }
             writeTaskFile(task.id, jsonString)
 
             getTaskCache()[task.id] = task
