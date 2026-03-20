@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -29,6 +28,8 @@ import com.example.dailytasks.R
 
 @Composable
 fun ScreenHeader(
+    title: String,
+    subtitle: String,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -56,7 +57,7 @@ fun ScreenHeader(
         }
         Column {
             Text(
-                text  = stringResource(R.string.new_task_header),
+                text  = title,
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight    = FontWeight.Bold,
                     letterSpacing = (-0.5).sp,
@@ -64,7 +65,7 @@ fun ScreenHeader(
                 ),
             )
             Text(
-                text  = stringResource(R.string.new_task_subheader),
+                text  = subtitle,
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }

@@ -31,8 +31,8 @@ class MainActivity : ComponentActivity() {
                 ){
                     composable<MainNavigation.Home> {
                         MainScreen(
-                            onNavigateToAddTask ={
-                                navController.navigate(MainNavigation.AddTask)
+                            onNavigateToAddTask ={ ticketId ->
+                                navController.navigate(MainNavigation.AddTask(ticketId))
                             }
                         )
                     }

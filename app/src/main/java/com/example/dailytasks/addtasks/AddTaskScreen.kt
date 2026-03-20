@@ -9,7 +9,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,12 +16,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -30,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -38,8 +36,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,6 +71,8 @@ fun AddTaskScreen(
         label = "accent",
     )
 
+    val isEdit = uiState.taskId != null
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -86,6 +86,8 @@ fun AddTaskScreen(
                     .background(MaterialTheme.colorScheme.background)
             ) {
                 ScreenHeader(
+                    title = if (isEdit) stringResource(R.string.edit_task_header) else stringResource(R.string.new_task_header),
+                    subtitle = if (isEdit) stringResource(R.string.edit_task_subheader) else stringResource(R.string.new_task_subheader),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 16.dp),
@@ -108,136 +110,142 @@ fun AddTaskScreen(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-            ,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            InputField(
-                label = stringResource(R.string.task_name_label), error = uiState.errors["name"]
-            ) {
-                OutlinedTextField(
-                    value = uiState.name,
-                    onValueChange = { viewModel.onNameChange(it) },
-                    placeholder = {
-                        Text(
-                            stringResource(R.string.task_name_placeholder),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                    },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Sentences,
-                        imeAction = ImeAction.Next,
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                        focusedBorderColor = accentColor,
-                        cursorColor = accentColor,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent
-                    ),
-                )
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = accentColor)
             }
-
-            InputField(label = stringResource(R.string.category_label)) {
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                ,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                InputField(
+                    label = stringResource(R.string.task_name_label), error = uiState.errors["name"]
                 ) {
-                    TypeTask.entries.forEach { type ->
-                        TypeTaskChip(
+                    OutlinedTextField(
+                        value = uiState.name,
+                        onValueChange = { viewModel.onNameChange(it) },
+                        placeholder = {
+                            Text(
+                                stringResource(R.string.task_name_placeholder),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
+                            imeAction = ImeAction.Next,
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            focusedBorderColor = accentColor,
+                            cursorColor = accentColor,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent
+                        ),
+                    )
+                }
+
+                InputField(label = stringResource(R.string.category_label)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        TypeTask.entries.forEach { type ->
+                            TypeTaskChip(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp),
+                                taskType = type,
+                                shape = RoundedCornerShape(12.dp),
+                                onSelectType = { viewModel.onTypeChange(type) },
+                                selected = uiState.taskType == type,
+                            )
+                        }
+                    }
+                }
+
+                Column(
+                    modifier= Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp))
+                {
+                    Text(
+                        text = stringResource(R.string.schedule_type_label),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        ModeTab(
                             modifier = Modifier
-                                .padding(horizontal = 4.dp),
-                            taskType = type,
+                                .fillMaxHeight()
+                                .weight(1f)
+                                .clickable { viewModel.onModeChange(TaskMode.SINGLE) },
+                            label = stringResource(R.string.mode_one_time),
                             shape = RoundedCornerShape(12.dp),
-                            onSelectType = { viewModel.onTypeChange(type) },
-                            selected = uiState.taskType == type,
+                            selected = uiState.taskMode == TaskMode.SINGLE,
+                        )
+                        ModeTab(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(1f)
+                                .clickable  { viewModel.onModeChange(TaskMode.RECURRING) },
+                            label = stringResource(R.string.mode_recurring),
+                            shape = RoundedCornerShape(12.dp),
+                            selected = uiState.taskMode == TaskMode.RECURRING,
                         )
                     }
                 }
-            }
 
-            Column(
-                modifier= Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp))
-            {
-                Text(
-                    text = stringResource(R.string.schedule_type_label),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    ModeTab(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .weight(1f)
-                            .clickable { viewModel.onModeChange(TaskMode.SINGLE) },
-                        label = stringResource(R.string.mode_one_time),
-                        shape = RoundedCornerShape(12.dp),
-                        selected = uiState.taskMode == TaskMode.SINGLE,
-                    )
-                    ModeTab(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .weight(1f)
-                            .clickable  { viewModel.onModeChange(TaskMode.RECURRING) },
-                        label = stringResource(R.string.mode_recurring),
-                        shape = RoundedCornerShape(12.dp),
-                        selected = uiState.taskMode == TaskMode.RECURRING,
-                    )
-                }
-            }
-
-            AnimatedContent(
-                modifier = Modifier.fillMaxWidth(),
-                targetState = uiState.taskMode,
-                transitionSpec = {
-                    (fadeIn(tween(200)) + slideInVertically { it / 10 })
-                        .togetherWith(fadeOut(tween(150)) + slideOutVertically { -it / 10 })
-                },
-                label = "mode_section",
-            ) { mode ->
-                when (mode) {
-                    TaskMode.SINGLE -> SingleTaskSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        selectedDate = uiState.singleDate,
-                        selectedTime = uiState.singleTime,
-                        dateError = uiState.errors["singleDate"],
-                        timeError = uiState.errors["singleTime"],
-                        onDateChange = { viewModel.onSingleDateChange(it) },
-                        onTimeChange = { viewModel.onSingleTimeChange(it) }
-                    )
-                    TaskMode.RECURRING -> RecurringTaskSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        schedule = uiState.schedule,
-                        hasLimit = uiState.hasLimit,
-                        limitDate = uiState.limitDate,
-                        daysError = uiState.errors["days"],
-                        timesError = uiState.errors["times"],
-                        limitDateError = uiState.errors["limitDate"],
-                        onToggleDayForTime = { day, time -> viewModel.onToggleDayForTime(day, time) },
-                        onAddTimeBlock = { time, days -> viewModel.onAddTime(time, days ) },
-                        onRemoveTimeBlock = { time -> viewModel.onRemoveTimeBlock(time) },
-                        onToggleLimit = { viewModel.onToggleLimit() },
-                        onLimitDateChange = { viewModel.onLimitDateChange(it) }
-                    )
+                AnimatedContent(
+                    modifier = Modifier.fillMaxWidth(),
+                    targetState = uiState.taskMode,
+                    transitionSpec = {
+                        (fadeIn(tween(200)) + slideInVertically { it / 10 })
+                            .togetherWith(fadeOut(tween(150)) + slideOutVertically { -it / 10 })
+                    },
+                    label = "mode_section",
+                ) { mode ->
+                    when (mode) {
+                        TaskMode.SINGLE -> SingleTaskSection(
+                            modifier = Modifier.fillMaxWidth(),
+                            selectedDate = uiState.singleDate,
+                            selectedTime = uiState.singleTime,
+                            dateError = uiState.errors["singleDate"],
+                            timeError = uiState.errors["singleTime"],
+                            onDateChange = { viewModel.onSingleDateChange(it) },
+                            onTimeChange = { viewModel.onSingleTimeChange(it) }
+                        )
+                        TaskMode.RECURRING -> RecurringTaskSection(
+                            modifier = Modifier.fillMaxWidth(),
+                            schedule = uiState.schedule,
+                            hasLimit = uiState.hasLimit,
+                            limitDate = uiState.limitDate,
+                            daysError = uiState.errors["days"],
+                            timesError = uiState.errors["times"],
+                            limitDateError = uiState.errors["limitDate"],
+                            onToggleDayForTime = { day, time -> viewModel.onToggleDayForTime(day, time) },
+                            onAddTimeBlock = { time, days -> viewModel.onAddTime(time, days ) },
+                            onRemoveTimeBlock = { time -> viewModel.onRemoveTimeBlock(time) },
+                            onToggleLimit = { viewModel.onToggleLimit() },
+                            onLimitDateChange = { viewModel.onLimitDateChange(it) }
+                        )
+                    }
                 }
             }
         }

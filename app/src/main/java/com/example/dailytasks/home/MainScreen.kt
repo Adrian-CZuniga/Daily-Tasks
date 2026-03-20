@@ -31,7 +31,7 @@ import com.example.dailytasks.core.ui.composables.StatusWrapper
 
 @Composable
 fun MainScreen(
-    onNavigateToAddTask : () -> Unit = {},
+    onNavigateToAddTask : (ticketId : String?) -> Unit = {},
     viewModel : TaskViewModel = hiltViewModel()
 ){
     val status by viewModel.status.collectAsState()
@@ -44,7 +44,7 @@ fun MainScreen(
         .fillMaxSize(),
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToAddTask,
+                onClick = { onNavigateToAddTask(null) },
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
@@ -96,6 +96,12 @@ fun MainScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     dateFilter = today,
                     taskList = dailyTaskModels,
+                    onEdit = { ticketId ->
+                        onNavigateToAddTask(ticketId)
+                    },
+                    onCancel = {
+
+                    },
                     onToggleComplete = { ticketId ->
                         val ticket = dailyTaskModels.find { it.ticketId == ticketId }
                         val newStatus = if (ticket?.status == TaskStatus.PENDING) TaskStatus.COMPLETED else TaskStatus.PENDING

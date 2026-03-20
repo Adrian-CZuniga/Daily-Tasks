@@ -21,9 +21,15 @@ class TaskRepository @Inject constructor(private val taskManager: TaskManager) :
     }
 
     override suspend fun getTaskById(taskId: String): TaskModel? {
-        // Implementación pendiente
-        return null
+        return taskManager.getTaskById(taskId)
     }
+
+    override suspend fun getTaskByTicketId(ticketId: String): TaskModel? {
+        val ticket = taskManager.findTicketById(ticketId)
+
+        return ticket?.taskId?.let { getTaskById(it) }
+    }
+
 
     override suspend fun deleteTask(taskId: String) {
         // Implementación pendiente

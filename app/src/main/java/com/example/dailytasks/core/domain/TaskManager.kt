@@ -36,6 +36,23 @@ class TaskManager(private val context: Context) {
         }.flowOn(Dispatchers.IO)
     }
 
+    fun getTaskById(taskId : String) : TaskModel? {
+        return getTaskCache()[taskId]
+    }
+
+
+    fun findTicketById(ticketId: String): TicketModel? {
+        val index = getTicketIndex()
+        val dateString = index[ticketId] ?: return null
+
+        val date = LocalDate.parse(dateString)
+        val file = File(getTicketDirectoryByDay(date), "$ticketId.json")
+
+        return if (file.exists()) {
+            json.decodeFromString<DayTicketDTO>(file.readText()).toDomain()
+        } else null
+    }
+
     private fun readTicketsFromDir(dayDir: File): List<TicketModel> {
         val files = dayDir.listFiles { file -> file.extension == "json" } ?: return emptyList()
 
@@ -63,8 +80,6 @@ class TaskManager(private val context: Context) {
         )
     }
 
-
-
     private fun getTaskCache(): MutableMap<String, TaskModel> {
         if (taskCache == null) {
             taskCache = loadAllTasks()
@@ -89,18 +104,21 @@ class TaskManager(private val context: Context) {
             }.getOrNull()
         }.toMap().toMutableMap()
     }
-    fun saveTask(task: TaskModel) {
-        val jsonString = when (task) {
-            is TaskSequenceLimitModel -> json.encodeToString(task.toDto())
-            is TaskSingleModel -> json.encodeToString(task.toDto())
-            else -> throw IllegalArgumentException("Invalid task type")
+
+    suspend fun saveTask(task: TaskModel) {
+        withContext(Dispatchers.IO) {
+            val jsonString = when (task) {
+                is TaskSequenceLimitModel -> json.encodeToString(task.toDto())
+                is TaskSingleModel -> json.encodeToString(task.toDto())
+                else -> throw IllegalArgumentException("Invalid task type")
+            }
+
+            writeTaskFile(task.id, jsonString)
+
+            getTaskCache()[task.id] = task
+
+            createTicketModel(task)
         }
-
-        writeTaskFile(task.id, jsonString)
-
-        getTaskCache()[task.id] = task
-
-        createTicketModel(task)
     }
 
     private fun createTicketModel(task: TaskModel) {
@@ -125,8 +143,8 @@ class TaskManager(private val context: Context) {
     private fun saveTicketModel(ticketModel: TicketModel) {
         val ticketDTO = ticketModel.toDto()
         val json = json.encodeToString(ticketDTO)
-
         writeTicketFile(ticketModel.ticketId, json, ticketModel.date)
+        updateIndex(ticketDTO.id, ticketDTO.date)
     }
 
 
@@ -182,6 +200,24 @@ class TaskManager(private val context: Context) {
 
         task.writeAtomic(json)
     }
+
+    private fun getTicketIndex(): Map<String, String> {
+        val indexFile = File(context.filesDir, "ticket_index.json")
+        return if (indexFile.exists()) {
+            runCatching {
+                json.decodeFromString<TicketIndexDto>(indexFile.readText()).mapping
+            }.getOrDefault(emptyMap())
+        } else emptyMap()
+    }
+
+    fun updateIndex(ticketId: String, date: LocalDate) {
+        val indexFile = File(context.filesDir, "ticket_index.json")
+
+        val currentIndex = getTicketIndex().toMutableMap()
+        currentIndex[ticketId] = date.toString()
+        indexFile.writeAtomic(json.encodeToString(TicketIndexDto(currentIndex)))
+    }
+
 
     companion object JsonManager {
         private val json = Json {

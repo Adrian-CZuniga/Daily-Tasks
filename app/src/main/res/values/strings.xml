@@ -61,4 +61,6 @@
     <string name="error_add_time_slot">Add at least one time slot</string>
     <string name="error_select_limit_date">Select a limit date</string>
     <string name="back_description" translatable="false">Back button</string>
+    <string name="edit_task_header">Edit task</string>
+    <string name="edit_task_subheader">Reconfigure the next schedule tasks</string>
 </resources>

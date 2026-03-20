@@ -21,11 +21,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +53,8 @@ import java.util.Locale
 fun TicketListItem(
     dailyTaskModel: DailyTaskModel,
     onToggleComplete: (String) -> Unit,
+    onEdit: (String) -> Unit = {},
+    onCancel: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val is24Hour = DateFormat.is24HourFormat(context)
@@ -54,6 +62,7 @@ fun TicketListItem(
     val formatter = DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
 
     val isCompleted = dailyTaskModel.status == TaskStatus.COMPLETED
+    var showMenu by remember { mutableStateOf(false) }
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isCompleted)
@@ -187,13 +196,43 @@ fun TicketListItem(
             }
         }
 
-        Icon(
-            imageVector = Icons.Default.MoreVert,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .size(20.dp)
-                .graphicsLayer { alpha = contentAlpha }
-        )
+        Box {
+            IconButton(
+                onClick = { showMenu = true },
+                modifier = Modifier
+                    .size(24.dp)
+                    .graphicsLayer { alpha = contentAlpha }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Options",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            DropdownMenu(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .clip(RoundedCornerShape(8.dp)),
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Edit") },
+                    onClick = {
+                        showMenu = false
+                        onEdit(dailyTaskModel.ticketId)
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Cancel") },
+                    onClick = {
+                        showMenu = false
+                        onCancel(dailyTaskModel.ticketId)
+                    }
+                )
+            }
+        }
     }
 }

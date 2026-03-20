@@ -60,4 +60,6 @@
     <string name="error_select_day">Selecciona al menos un día</string>
     <string name="error_add_time_slot">Añade al menos un horario</string>
     <string name="error_select_limit_date">Selecciona una fecha límite</string>
+    <string name="edit_task_header">Edit task</string>
+    <string name="edit_task_subheader">Reconfigure the next schedule tasks</string>
 </resources>

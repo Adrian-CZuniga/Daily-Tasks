@@ -1,12 +1,15 @@
 package com.example.dailytasks.addtasks
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.example.dailytasks.core.data.ITaskRepository
 import com.example.dailytasks.core.domain.TaskModel
 import com.example.dailytasks.core.domain.TaskSequenceLimitModel
 import com.example.dailytasks.core.domain.TaskSingleModel
 import com.example.dailytasks.core.domain.TypeTask
+import com.example.dailytasks.core.ui.navigation.MainNavigation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,12 +18,12 @@ import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 import javax.inject.Inject
 
 enum class TaskMode { SINGLE, RECURRING }
 
 data class AddTaskUiState(
+    val taskId: String? = null,
     val name: String = "",
     val taskMode: TaskMode = TaskMode.SINGLE,
     val taskType: TypeTask = TypeTask.PERSONAL,
@@ -34,16 +37,60 @@ data class AddTaskUiState(
     // Status
     val errors: Map<String, String> = emptyMap(),
     val isSaving: Boolean = false,
-    val isSaved: Boolean = false
+    val isSaved: Boolean = false,
+    val isLoading: Boolean = false
 )
 
 @HiltViewModel
 class AddTaskViewModel @Inject constructor(
-    private val repository: ITaskRepository
+    private val repository: ITaskRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AddTaskUiState())
+    private val route = savedStateHandle.toRoute<MainNavigation.AddTask>()
+    
+    private val _uiState = MutableStateFlow(AddTaskUiState(taskId = route.taskId))
     val uiState = _uiState.asStateFlow()
+
+    init {
+        route.taskId?.let { id ->
+            loadTask(id)
+        }
+    }
+
+    private fun loadTask(ticketId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val task = repository.getTaskByTicketId(ticketId)
+
+            if (task != null) {
+                _uiState.update { state ->
+                    when (task) {
+                        is TaskSingleModel -> state.copy(
+                            name = task.name,
+                            taskMode = TaskMode.SINGLE,
+                            taskType = task.type,
+                            singleDate = task.date,
+                            singleTime = task.time,
+                            isLoading = false
+                        )
+                        is TaskSequenceLimitModel -> state.copy(
+                            name = task.name,
+                            taskMode = TaskMode.RECURRING,
+                            taskType = task.type,
+                            schedule = task.schedule,
+                            hasLimit = task.limitDate != null,
+                            limitDate = task.limitDate,
+                            isLoading = false
+                        )
+                        else -> state.copy(isLoading = false)
+                    }
+                }
+            } else {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
 
     fun onNameChange(newName: String) {
         _uiState.update { it.copy(name = newName, errors = it.errors - "name") }
@@ -64,8 +111,6 @@ class AddTaskViewModel @Inject constructor(
     fun onSingleTimeChange(time: LocalTime) {
         _uiState.update { it.copy(singleTime = time, errors = it.errors - "singleTime") }
     }
-
-    // --- Nueva lógica para RecurringTaskSection (Time -> Days) ---
 
     fun onToggleDayForTime(day: DayOfWeek, time: LocalTime) {
         _uiState.update { state ->
@@ -114,8 +159,6 @@ class AddTaskViewModel @Inject constructor(
         }
     }
 
-    // -------------------------------------------------------------
-
     fun onToggleLimit() {
         _uiState.update { it.copy(hasLimit = !it.hasLimit) }
     }
@@ -141,7 +184,7 @@ class AddTaskViewModel @Inject constructor(
                         date = state.singleDate!!,
                         time = state.singleTime!!,
                         type = state.taskType,
-                        id = TaskModel.createId(state.name, state.taskType)
+                        id = state.taskId ?: TaskModel.createId(state.name, state.taskType)
                     )
                 } else null
             }
@@ -156,7 +199,7 @@ class AddTaskViewModel @Inject constructor(
                         schedule = state.schedule,
                         limitDate = if (state.hasLimit) state.limitDate else null,
                         type = state.taskType,
-                        id = TaskModel.createId(state.name, state.taskType)
+                        id = state.taskId ?: TaskModel.createId(state.name, state.taskType)
                     )
                 } else null
             }

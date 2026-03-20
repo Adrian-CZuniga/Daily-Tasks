@@ -39,7 +39,9 @@ fun TicketListComposable(
     taskList: List<DailyTaskModel>,
     modifier: Modifier = Modifier,
     dateFilter: LocalDate? = null,
-    onToggleComplete: (String) -> Unit = {}
+    onToggleComplete: (String) -> Unit = {},
+    onEdit: (String) -> Unit = {},
+    onCancel: (String) -> Unit = {},
 ) {
     val filterList = taskList.filter { dateFilter == null || it.date.isEqual(dateFilter) }
     
@@ -53,7 +55,9 @@ fun TicketListComposable(
             items(filterList) { dailyTaskModel ->
                 TicketListItem(
                     dailyTaskModel = dailyTaskModel,
-                    onToggleComplete = onToggleComplete
+                    onToggleComplete = onToggleComplete,
+                    onEdit = onEdit,
+                    onCancel = onCancel
                 )
             }
         }

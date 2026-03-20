@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 sealed class MainNavigation {
     @Serializable
     data object Home : MainNavigation()
+    
     @Serializable
-    data object AddTask : MainNavigation()
+    data class AddTask(val taskId: String? = null) : MainNavigation()
 }

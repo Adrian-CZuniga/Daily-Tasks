@@ -24,6 +24,7 @@ interface ITaskRepository {
      * Obtiene una tarea específica por su ID.
      */
     suspend fun getTaskById(taskId: String): TaskModel?
+    suspend fun getTaskByTicketId(ticketId:  String) : TaskModel?
 
     /**
      * Elimina una tarea por su ID.
