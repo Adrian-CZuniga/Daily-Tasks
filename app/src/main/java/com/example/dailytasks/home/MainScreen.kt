@@ -99,11 +99,16 @@ fun MainScreen(
                     onEdit = { ticketId ->
                         onNavigateToAddTask(ticketId)
                     },
-                    onCancel = {
-
+                    onCancel = { ticketId ->
+                        val ticket = dailyTaskModels.find { it.ticketId == ticketId }
+                        val newStatus = if (ticket?.status == TaskStatus.CANCELLED) TaskStatus.PENDING else TaskStatus.CANCELLED
+                        val newTicket = ticket?.copy(status = newStatus) ?: return@TicketListComposable
+                        viewModel.updateCompletionTask(newTicket)
                     },
                     onToggleComplete = { ticketId ->
                         val ticket = dailyTaskModels.find { it.ticketId == ticketId }
+                        if (ticket?.status == TaskStatus.CANCELLED) return@TicketListComposable
+
                         val newStatus = if (ticket?.status == TaskStatus.PENDING) TaskStatus.COMPLETED else TaskStatus.PENDING
                         val newTicket = ticket?.copy(status = newStatus) ?: return@TicketListComposable
                         viewModel.updateCompletionTask(newTicket)
