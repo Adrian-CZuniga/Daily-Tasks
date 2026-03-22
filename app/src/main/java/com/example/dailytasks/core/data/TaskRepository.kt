@@ -3,15 +3,19 @@ package com.example.dailytasks.core.data
 import com.example.dailytasks.core.domain.DailyTaskModel
 import com.example.dailytasks.core.domain.TaskManager
 import com.example.dailytasks.core.domain.TaskModel
-import com.example.dailytasks.core.domain.TaskStatus
-import com.example.dailytasks.core.domain.Ticket
 import com.example.dailytasks.core.domain.TicketModel
-import com.example.dailytasks.core.domain.toTicketModel
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import javax.inject.Inject
 
-class TaskRepository @Inject constructor(private val taskManager: TaskManager) : ITaskRepository {
+/**
+ * Implementación del repositorio de tareas.
+ * Actúa como mediador entre la lógica de negocio y el gestor de archivos.
+ */
+class TaskRepository @Inject constructor(
+    private val taskManager: TaskManager
+) : ITaskRepository {
+
     override fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>> {
         return taskManager.getDailyTasks(day)
     }
@@ -21,7 +25,7 @@ class TaskRepository @Inject constructor(private val taskManager: TaskManager) :
     }
 
     override suspend fun updateTask(task: TaskModel) {
-        taskManager.updateTask(task)
+        taskManager.saveTask(task)
     }
 
     override suspend fun getTaskById(taskId: String): TaskModel? {
@@ -30,18 +34,7 @@ class TaskRepository @Inject constructor(private val taskManager: TaskManager) :
 
     override suspend fun getTaskByTicketId(ticketId: String): TaskModel? {
         val ticket = taskManager.findTicketById(ticketId)
-
         return ticket?.taskId?.let { getTaskById(it) }
-    }
-
-
-    override suspend fun deleteTask(taskId: String) {
-        // Implementación pendiente
-    }
-
-    override suspend fun getAllTasks(): List<TaskModel> {
-        // Implementación pendiente
-        return emptyList()
     }
 
     override suspend fun updateTicket(newTicket: TicketModel) {

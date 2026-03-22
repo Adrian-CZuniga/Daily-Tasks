@@ -1,6 +1,7 @@
 package com.example.dailytasks.core.domain
 
 import android.content.Context
+import com.example.dailytasks.core.utils.AppConstants
 import com.example.dailytasks.core.utils.observeChanges
 import com.example.dailytasks.core.utils.writeAtomic
 import kotlinx.coroutines.Dispatchers
@@ -14,9 +15,17 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.LocalDate
 
+/**
+ * Gestor central de persistencia de tareas y tickets.
+ * Maneja la lógica de almacenamiento en archivos JSON de forma jerárquica.
+ */
 class TaskManager(private val context: Context) {
     private var taskCache: MutableMap<String, TaskModel>? = null
 
+    /**
+     * Obtiene un flujo de tareas diarias para una fecha específica.
+     * Observa cambios en el directorio del mes para actualizaciones en tiempo real.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getDailyTasks(day: LocalDate): Flow<List<DailyTaskModel>> {
         val monthDir = getMonthDirectory(day)
@@ -33,10 +42,16 @@ class TaskManager(private val context: Context) {
         }.flowOn(Dispatchers.IO)
     }
 
+    /**
+     * Busca una tarea por su identificador único.
+     */
     fun getTaskById(taskId : String) : TaskModel? {
         return getTaskCache()[taskId]
     }
 
+    /**
+     * Busca un ticket específico utilizando el índice global.
+     */
     fun findTicketById(ticketId: String): TicketModel? {
         val index = getTicketIndex()
         val dateString = index[ticketId] ?: return null
@@ -96,25 +111,24 @@ class TaskManager(private val context: Context) {
         }.toMap().toMutableMap()
     }
 
+    /**
+     * Guarda una tarea y genera sus tickets correspondientes.
+     */
     suspend fun saveTask(task: TaskModel) {
         withContext(Dispatchers.IO) {
             val jsonString = when (task) {
                 is TaskSequenceLimitModel -> json.encodeToString(task.toDto())
                 is TaskSingleModel -> json.encodeToString(task.toDto())
-                else -> throw IllegalArgumentException("Invalid task type")
+                else -> throw IllegalArgumentException("Tipo de tarea no soportado")
             }
 
             writeTaskFile(task.id, jsonString)
             getTaskCache()[task.id] = task
-            createTicketModel(task)
+            createTicketsForTask(task)
         }
     }
 
-    suspend fun updateTask(task: TaskModel) {
-        saveTask(task)
-    }
-
-    private fun createTicketModel(task: TaskModel) {
+    private fun createTicketsForTask(task: TaskModel) {
         val dailyTickets = when (task) {
             is TaskSingleModel -> listOf(task.createDayTicketModel())
             is TaskSequenceLimitModel -> {
@@ -151,34 +165,36 @@ class TaskManager(private val context: Context) {
     private fun getMonthDirectory(date: LocalDate): File {
         val year = date.year.toString()
         val month = String.format("%02d", date.monthValue)
-        val dir = File(context.filesDir, "tickets/$year/$month")
+        val dir = File(context.filesDir, "${AppConstants.TICKETS_DIR}/$year/$month")
         if (!dir.exists()) dir.mkdirs()
         return dir
     }
 
     private fun getDayFile(date: LocalDate): File {
         val day = String.format("%02d", date.dayOfMonth)
-        return File(getMonthDirectory(date), "$day.json")
+        return File(getMonthDirectory(date), "$day${AppConstants.JSON_EXT}")
     }
 
     private fun getTasksDirectory(): File {
-        val dir = File(context.filesDir, "tasks_configurations")
+        val dir = File(context.filesDir, AppConstants.TASKS_DIR)
         if (!dir.exists()) dir.mkdirs()
         return dir
     }
 
     private fun writeTaskFile(id: String, json: String) {
-        val tasksDir = getTasksDirectory()
-        val file = File(tasksDir, "$id.json")
+        val file = File(getTasksDirectory(), "$id${AppConstants.JSON_EXT}")
         file.writeAtomic(json)
     }
 
+    /**
+     * Actualiza el estado de un ticket específico.
+     */
     fun updateTicket(newTicket : TicketModel) {
         saveTicketsForDay(newTicket.date, listOf(newTicket))
     }
 
     private fun getTicketIndex(): Map<String, String> {
-        val indexFile = File(context.filesDir, "ticket_index.json")
+        val indexFile = File(context.filesDir, AppConstants.TICKET_INDEX_FILE)
         return if (indexFile.exists()) {
             runCatching {
                 json.decodeFromString<TicketIndexDto>(indexFile.readText()).mapping
@@ -186,17 +202,17 @@ class TaskManager(private val context: Context) {
         } else emptyMap()
     }
 
+    /**
+     * Actualiza el índice global de tickets para búsquedas rápidas.
+     */
     fun updateIndex(ticketId: String, date: LocalDate) {
-        val indexFile = File(context.filesDir, "ticket_index.json")
-
+        val indexFile = File(context.filesDir, AppConstants.TICKET_INDEX_FILE)
         val currentIndex = getTicketIndex().toMutableMap()
         currentIndex[ticketId] = date.toString()
         indexFile.writeAtomic(json.encodeToString(TicketIndexDto(currentIndex)))
     }
 
-    companion object JsonManager {
-        private val json = Json {
-            ignoreUnknownKeys = true
-        }
+    companion object {
+        private val json = Json { ignoreUnknownKeys = true }
     }
 }

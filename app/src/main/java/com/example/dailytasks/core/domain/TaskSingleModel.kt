@@ -4,6 +4,9 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.LocalTime
 
+/**
+ * Modelo que representa una tarea de ejecución única.
+ */
 data class TaskSingleModel(
     override val name : String,
     val date : LocalDate,
@@ -11,6 +14,9 @@ data class TaskSingleModel(
     override val type: TypeTask = TypeTask.PERSONAL,
     override val id : String,
 ) : TaskModel(id) {
+    /**
+     * Crea la instancia de ticket para esta tarea única.
+     */
     fun createDayTicketModel(): TicketModel {
         return TicketModel(
             date = date,
@@ -21,7 +27,9 @@ data class TaskSingleModel(
     }
 }
 
-
+/**
+ * DTO para la serialización de tareas únicas.
+ */
 @Serializable
 data class TaskSingleDto(
     val id: String,
@@ -31,8 +39,9 @@ data class TaskSingleDto(
     @Serializable(with = LocalTimeSerializer::class) val time: LocalTime
 )
 
-
-
+/**
+ * Convierte el modelo de dominio a DTO.
+ */
 fun TaskSingleModel.toDto() = TaskSingleDto(
     id = id,
     name = name,
@@ -41,6 +50,9 @@ fun TaskSingleModel.toDto() = TaskSingleDto(
     time = time
 )
 
+/**
+ * Convierte el DTO a modelo de dominio.
+ */
 fun TaskSingleDto.toDomain() = TaskSingleModel(
     id = id,
     name = name,
